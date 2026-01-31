@@ -1,0 +1,49 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-size: 14px; /* Base menor para diminuir todas as fontes */
+  }
+
+  body {
+    @apply bg-background text-secondary font-sans;
+    margin: 0;
+  }
+
+  * {
+    @apply border-secondary/20;
+  }
+}
+
+/* Scrollbar personalizada */
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(230, 194, 132, 0.3);
+  border-radius: 10px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(230, 194, 132, 0.5);
+}
+
+*::-webkit-scrollbar-thumb:active {
+  background: rgba(230, 194, 132, 0.8);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(230, 194, 132, 0.3) transparent;
+}
