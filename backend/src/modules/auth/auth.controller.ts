@@ -1,6 +1,7 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { AuthService } from './auth.service.js';
 import { loginSchema, registerSchema } from './auth.schema.js';
+import { ValidationError } from '../../shared/errors/app-error.js';
 
 export class AuthController {
   private service: AuthService;
@@ -24,6 +25,33 @@ export class AuthController {
   async refresh(request: FastifyRequest, reply: FastifyReply) {
     const { userId, companyId } = request.user;
     const result = await this.service.refresh(userId, companyId);
+    return reply.send(result);
+  }
+
+  async uploadAvatar(request: FastifyRequest, reply: FastifyReply) {
+    const file = await request.file();
+    if (!file) throw new ValidationError('Nenhum arquivo enviado');
+
+    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!ALLOWED_TYPES.includes(file.mimetype)) {
+      throw new ValidationError('Tipo de arquivo não permitido. Use JPEG, PNG ou WebP');
+    }
+
+    const ext = file.filename.split('.').pop()!;
+    const buffer = await file.toBuffer();
+
+    if (buffer.length > 5 * 1024 * 1024) {
+      throw new ValidationError('Arquivo muito grande. Tamanho máximo: 5MB');
+    }
+
+    const { userId } = request.user;
+    const result = await this.service.uploadAvatar(userId, buffer, ext);
+    return reply.send(result);
+  }
+
+  async removeAvatar(request: FastifyRequest, reply: FastifyReply) {
+    const { userId } = request.user;
+    const result = await this.service.removeAvatar(userId);
     return reply.send(result);
   }
 }
