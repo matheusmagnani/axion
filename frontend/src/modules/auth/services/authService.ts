@@ -6,6 +6,7 @@ interface LoginResponse {
     id: number;
     name: string;
     email: string;
+    avatar: string | null;
     companyId: number;
     company: {
       id: number;
@@ -38,6 +39,29 @@ export const authService = {
   getUser() {
     const user = localStorage.getItem('user');
     return user ? JSON.parse(user) : null;
+  },
+
+  async uploadAvatar(file: File): Promise<{ avatar: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await api.patch<{ avatar: string }>('/api/auth/avatar', formData, {
+      headers: { 'Content-Type': undefined },
+    });
+    const user = this.getUser();
+    if (user) {
+      user.avatar = response.data.avatar;
+      localStorage.setItem('user', JSON.stringify(user));
+    }
+    return response.data;
+  },
+
+  async removeAvatar(): Promise<void> {
+    await api.delete('/api/auth/avatar');
+    const user = this.getUser();
+    if (user) {
+      user.avatar = null;
+      localStorage.setItem('user', JSON.stringify(user));
+    }
   },
 
   async register(data: {

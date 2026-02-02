@@ -1,1 +1,4 @@
 .mcp.json
+backend/uploads/
+node_modules
+backend/node_modules/

@@ -1,7 +1,10 @@
+import path from 'node:path';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import jwt from '@fastify/jwt';
+import multipart from '@fastify/multipart';
+import fastifyStatic from '@fastify/static';
 import { errorHandler } from './shared/middlewares/error-handler.js';
 import { registerAuthHook } from './shared/middlewares/auth.js';
 import { authRoutes } from './modules/auth/auth.routes.js';
@@ -30,7 +33,19 @@ const start = async () => {
       credentials: true,
     });
 
-    await app.register(helmet);
+    await app.register(helmet, {
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    });
+
+    await app.register(multipart, {
+      limits: { fileSize: 5 * 1024 * 1024 },
+    });
+
+    await app.register(fastifyStatic, {
+      root: path.join(process.cwd(), 'uploads'),
+      prefix: '/uploads/',
+      decorateReply: false,
+    });
 
     await app.register(jwt, {
       secret: process.env.JWT_SECRET || 'axion-secret',

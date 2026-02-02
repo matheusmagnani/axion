@@ -20,7 +20,8 @@ export function registerAuthHook(app: FastifyInstance) {
     // Skip auth for public routes
     if (
       request.url === '/health' ||
-      request.url.startsWith('/api/auth/')
+      request.url.startsWith('/api/auth/') ||
+      request.url.startsWith('/uploads/')
     ) {
       return;
     }
