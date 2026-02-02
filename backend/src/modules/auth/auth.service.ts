@@ -3,7 +3,7 @@ import path from 'node:path';
 import bcrypt from 'bcryptjs';
 import { prisma } from '../../infra/database/prisma/client.js';
 import { UnauthorizedError, ConflictError } from '../../shared/errors/app-error.js';
-import type { LoginInput, RegisterInput } from './auth.schema.js';
+import type { LoginInput, RegisterInput, UpdateProfileInput } from './auth.schema.js';
 import type { FastifyInstance } from 'fastify';
 
 const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
@@ -130,6 +130,41 @@ export class AuthService {
     }
 
     return { avatar: null };
+  }
+
+  async updateProfile(userId: number, data: UpdateProfileInput) {
+    if (data.email) {
+      const existing = await prisma.user.findFirst({
+        where: { email: data.email, id: { not: userId } },
+      });
+      if (existing) throw new ConflictError('Email já cadastrado');
+    }
+
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...(data.name !== undefined && { name: data.name }),
+        ...(data.email !== undefined && { email: data.email }),
+      },
+      include: { company: true },
+    });
+
+    return {
+      user: {
+        id: updated.id,
+        name: updated.name,
+        email: updated.email,
+        avatar: updated.avatar,
+        companyId: updated.companyId,
+        company: {
+          id: updated.company.id,
+          companyName: updated.company.companyName,
+          tradeName: updated.company.tradeName,
+          cnpj: updated.company.cnpj,
+          department: updated.company.department,
+        },
+      },
+    };
   }
 
   static async hashPassword(password: string): Promise<string> {

@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { AuthService } from './auth.service.js';
-import { loginSchema, registerSchema } from './auth.schema.js';
+import { loginSchema, registerSchema, updateProfileSchema } from './auth.schema.js';
 import { ValidationError } from '../../shared/errors/app-error.js';
 
 export class AuthController {
@@ -46,6 +46,13 @@ export class AuthController {
 
     const { userId } = request.user;
     const result = await this.service.uploadAvatar(userId, buffer, ext);
+    return reply.send(result);
+  }
+
+  async updateProfile(request: FastifyRequest, reply: FastifyReply) {
+    const data = updateProfileSchema.parse(request.body);
+    const { userId } = request.user;
+    const result = await this.service.updateProfile(userId, data);
     return reply.send(result);
   }
 
