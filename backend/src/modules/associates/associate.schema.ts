@@ -2,32 +2,32 @@ import { z } from 'zod';
 
 // Schema for creating associate
 export const createAssociateSchema = z.object({
-  name: z.string().min(3, 'Name must have at least 3 characters'),
+  name: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres'),
   cpf: z
     .string()
     .transform((val) => val.replace(/\D/g, ''))
-    .refine((val) => val.length === 11, 'CPF must have 11 digits'),
-  email: z.string().email('Invalid email'),
+    .refine((val) => val.length === 11, 'CPF deve ter 11 dígitos'),
+  email: z.string().email('Email inválido'),
   phone: z
     .string()
     .transform((val) => val.replace(/\D/g, ''))
-    .refine((val) => val.length >= 10 && val.length <= 11, 'Invalid phone'),
+    .refine((val) => val.length >= 10 && val.length <= 11, 'Telefone inválido'),
   status: z.enum(['ACTIVE', 'INACTIVE', 'PENDING']).optional().default('PENDING'),
 });
 
 // Schema for updating associate
 export const updateAssociateSchema = z.object({
-  name: z.string().min(3, 'Name must have at least 3 characters').optional(),
+  name: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres').optional(),
   cpf: z
     .string()
     .transform((val) => val.replace(/\D/g, ''))
-    .refine((val) => val.length === 11, 'CPF must have 11 digits')
+    .refine((val) => val.length === 11, 'CPF deve ter 11 dígitos')
     .optional(),
-  email: z.string().email('Invalid email').optional(),
+  email: z.string().email('Email inválido').optional(),
   phone: z
     .string()
     .transform((val) => val.replace(/\D/g, ''))
-    .refine((val) => val.length >= 10 && val.length <= 11, 'Invalid phone')
+    .refine((val) => val.length >= 10 && val.length <= 11, 'Telefone inválido')
     .optional(),
   status: z.enum(['ACTIVE', 'INACTIVE', 'PENDING']).optional(),
 });

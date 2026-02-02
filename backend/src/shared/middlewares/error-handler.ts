@@ -14,7 +14,7 @@ export function errorHandler(
   if (error instanceof ZodError) {
     return reply.status(400).send({
       statusCode: 400,
-      error: 'Validation Error',
+      error: 'Erro de Validação',
       message: 'Dados inválidos',
       issues: error.errors.map((e) => ({
         field: e.path.join('.'),
@@ -36,7 +36,7 @@ export function errorHandler(
   if (error.message?.includes('Unique constraint')) {
     return reply.status(409).send({
       statusCode: 409,
-      error: 'Conflict',
+      error: 'Conflito',
       message: 'Registro já existe',
     });
   }
@@ -44,7 +44,7 @@ export function errorHandler(
   // Erro interno (500)
   return reply.status(500).send({
     statusCode: 500,
-    error: 'Internal Server Error',
+    error: 'Erro Interno do Servidor',
     message: process.env.NODE_ENV === 'development' ? error.message : 'Erro interno do servidor',
   });
 }

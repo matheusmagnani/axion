@@ -3,11 +3,12 @@ import type { CreateAssociateInput, UpdateAssociateInput, ListAssociatesQuery } 
 import type { Associate, AssociateStatus } from '@prisma/client';
 
 export class AssociateRepository {
-  async findAll(query: ListAssociatesQuery) {
+  async findAll(query: ListAssociatesQuery, companyId: number) {
     const { page, limit, search, status, orderBy, order } = query;
     const skip = (page - 1) * limit;
 
     const where = {
+      companyId,
       ...(search && {
         OR: [
           { name: { contains: search, mode: 'insensitive' as const } },
@@ -39,9 +40,9 @@ export class AssociateRepository {
     };
   }
 
-  async findById(id: number): Promise<Associate | null> {
-    return prisma.associate.findUnique({
-      where: { id },
+  async findById(id: number, companyId: number): Promise<Associate | null> {
+    return prisma.associate.findFirst({
+      where: { id, companyId },
       include: {
         contracts: true,
         billings: true,
@@ -49,19 +50,19 @@ export class AssociateRepository {
     });
   }
 
-  async findByCpf(cpf: string): Promise<Associate | null> {
-    return prisma.associate.findUnique({
-      where: { cpf },
+  async findByCpf(cpf: string, companyId: number): Promise<Associate | null> {
+    return prisma.associate.findFirst({
+      where: { cpf, companyId },
     });
   }
 
-  async findByEmail(email: string): Promise<Associate | null> {
-    return prisma.associate.findUnique({
-      where: { email },
+  async findByEmail(email: string, companyId: number): Promise<Associate | null> {
+    return prisma.associate.findFirst({
+      where: { email, companyId },
     });
   }
 
-  async create(data: CreateAssociateInput): Promise<Associate> {
+  async create(data: CreateAssociateInput, companyId: number): Promise<Associate> {
     return prisma.associate.create({
       data: {
         name: data.name,
@@ -69,11 +70,12 @@ export class AssociateRepository {
         email: data.email,
         phone: data.phone,
         status: data.status as AssociateStatus,
+        companyId,
       },
     });
   }
 
-  async update(id: number, data: UpdateAssociateInput): Promise<Associate> {
+  async update(id: number, data: UpdateAssociateInput, companyId: number): Promise<Associate> {
     return prisma.associate.update({
       where: { id },
       data: {
@@ -86,9 +88,9 @@ export class AssociateRepository {
     });
   }
 
-  async delete(id: number): Promise<void> {
-    await prisma.associate.delete({
-      where: { id },
+  async delete(id: number, companyId: number): Promise<void> {
+    await prisma.associate.deleteMany({
+      where: { id, companyId },
     });
   }
 }

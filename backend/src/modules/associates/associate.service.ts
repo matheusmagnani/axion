@@ -9,69 +9,51 @@ export class AssociateService {
     this.repository = new AssociateRepository();
   }
 
-  async list(query: ListAssociatesQuery) {
-    return this.repository.findAll(query);
+  async list(query: ListAssociatesQuery, companyId: number) {
+    return this.repository.findAll(query, companyId);
   }
 
-  async getById(id: number) {
-    const associate = await this.repository.findById(id);
-    
+  async getById(id: number, companyId: number) {
+    const associate = await this.repository.findById(id, companyId);
+
     if (!associate) {
-      throw new NotFoundError('Associate');
+      throw new NotFoundError('Associado');
     }
 
     return associate;
   }
 
-  async create(data: CreateAssociateInput) {
-    // Check if associate with same CPF already exists
-    const existingCpf = await this.repository.findByCpf(data.cpf);
+  async create(data: CreateAssociateInput, companyId: number) {
+    const existingCpf = await this.repository.findByCpf(data.cpf, companyId);
     if (existingCpf) {
-      throw new ConflictError('An associate with this CPF already exists');
+      throw new ConflictError('Já existe um associado com este CPF');
     }
 
-    // Check if associate with same email already exists
-    const existingEmail = await this.repository.findByEmail(data.email);
-    if (existingEmail) {
-      throw new ConflictError('An associate with this email already exists');
-    }
-
-    return this.repository.create(data);
+    return this.repository.create(data, companyId);
   }
 
-  async update(id: number, data: UpdateAssociateInput) {
-    // Check if associate exists
-    const associate = await this.repository.findById(id);
+  async update(id: number, data: UpdateAssociateInput, companyId: number) {
+    const associate = await this.repository.findById(id, companyId);
     if (!associate) {
-      throw new NotFoundError('Associate');
+      throw new NotFoundError('Associado');
     }
 
-    // If updating CPF, check if another with same CPF exists
     if (data.cpf && data.cpf !== associate.cpf) {
-      const existingCpf = await this.repository.findByCpf(data.cpf);
+      const existingCpf = await this.repository.findByCpf(data.cpf, companyId);
       if (existingCpf) {
-        throw new ConflictError('An associate with this CPF already exists');
+        throw new ConflictError('Já existe um associado com este CPF');
       }
     }
 
-    // If updating email, check if another with same email exists
-    if (data.email && data.email !== associate.email) {
-      const existingEmail = await this.repository.findByEmail(data.email);
-      if (existingEmail) {
-        throw new ConflictError('An associate with this email already exists');
-      }
-    }
-
-    return this.repository.update(id, data);
+    return this.repository.update(id, data, companyId);
   }
 
-  async delete(id: number) {
-    // Check if associate exists
-    const associate = await this.repository.findById(id);
+  async delete(id: number, companyId: number) {
+    const associate = await this.repository.findById(id, companyId);
     if (!associate) {
-      throw new NotFoundError('Associate');
+      throw new NotFoundError('Associado');
     }
 
-    await this.repository.delete(id);
+    await this.repository.delete(id, companyId);
   }
 }

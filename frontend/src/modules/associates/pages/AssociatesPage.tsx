@@ -2,12 +2,16 @@ import { useState } from 'react';
 import { AssociatesHeader } from '../components/AssociatesHeader';
 import { AssociatesTable } from '../components/AssociatesTable';
 import { AssociateForm, type AssociateFormData } from '../components/AssociateForm';
+import { useCreateAssociate } from '../hooks/useAssociates';
 import { Modal } from '@shared/components/ui';
+import { useToast } from '@shared/hooks/useToast';
 
 export function AssociatesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const createAssociate = useCreateAssociate();
+  const { addToast } = useToast();
 
   const handleFilterChange = (key: string, value: string) => {
     if (key === 'status') {
@@ -20,35 +24,41 @@ export function AssociatesPage() {
   };
 
   return (
-    <div className="flex flex-col h-full px-3 md:px-6 lg:px-[45px] py-4 md:py-8 lg:py-[49px] w-full">
+    <div className="flex flex-col h-full px-2 md:px-4 lg:px-[25px] py-2 md:py-4 lg:py-[25px] w-full">
       {/* Fixed header */}
       <div className="flex-shrink-0">
-        <AssociatesHeader 
+        <AssociatesHeader
           onSearch={setSearchTerm}
           onFilterChange={handleFilterChange}
           onAdd={handleAdd}
         />
       </div>
-      
+
       {/* Table with scrollable cards */}
       <div className="flex-1 min-h-0 mt-4 md:mt-[37px]">
-        <AssociatesTable 
+        <AssociatesTable
           searchTerm={searchTerm}
           statusFilter={statusFilter}
         />
       </div>
 
       {/* New Associate Modal */}
-      <Modal 
-        isOpen={isModalOpen} 
+      <Modal
+        isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="New Associate"
+        title="Novo Associado"
       >
         <AssociateForm
           onSubmit={(data: AssociateFormData) => {
-            console.log('New associate:', data);
-            // TODO: Save associate via API
-            setIsModalOpen(false);
+            createAssociate.mutate(data, {
+              onSuccess: () => {
+                setIsModalOpen(false);
+                addToast('Associado criado com sucesso!', 'success');
+              },
+              onError: (error) => {
+                addToast(error.message, 'danger');
+              },
+            });
           }}
           onCancel={() => setIsModalOpen(false)}
         />

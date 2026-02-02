@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { House, UsersThree, CashRegister, Plugs, Users, Gear, AlignLeft, AlignTopSimple } from '@phosphor-icons/react';
+import { ChartPieSlice, UsersThree, CashRegister, Plugs, Users, Gear, AlignLeft, AlignTopSimple } from '@phosphor-icons/react';
 import { Link, useLocation } from 'react-router-dom';
 import logoSvg from '@/assets/logo.svg';
 
@@ -10,12 +10,12 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-  { label: 'Dashboard', icon: House, path: '/dashboard' },
-  { label: 'Associates', icon: UsersThree, path: '/associates' },
-  { label: 'Billings', icon: CashRegister, path: '/billings' },
-  { label: 'Connections', icon: Plugs, path: '/connections' },
-  { label: 'Collaborators', icon: Users, path: '/collaborators' },
-  { label: 'Settings', icon: Gear, path: '/settings' },
+  { label: 'Dashboard', icon: ChartPieSlice, path: '/dashboard' },
+  { label: 'Associados', icon: UsersThree, path: '/associates' },
+  { label: 'Cobranças', icon: CashRegister, path: '/billings' },
+  { label: 'Conexões', icon: Plugs, path: '/connections' },
+  { label: 'Colaboradores', icon: Users, path: '/collaborators' },
+  { label: 'Configurações', icon: Gear, path: '/settings' },
 ];
 
 const COLLAPSE_BREAKPOINT = 1280; // Collapses when width < 1280px
@@ -42,7 +42,7 @@ export function Sidebar() {
   return (
     <div 
       className={`
-        h-screen bg-primary overflow-hidden flex flex-col
+        h-screen bg-app-primary overflow-hidden flex flex-col
         transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] relative
         ${isCollapsed ? 'w-[68px]' : 'w-[260px] md:w-[276px]'}
       `}
@@ -51,16 +51,16 @@ export function Sidebar() {
       <button
         onClick={toggleSidebar}
         className={`
-          absolute top-4 p-2 hover:bg-primary/50 rounded z-10
+          absolute top-4 p-2 hover:bg-app-primary/50 rounded z-10
           transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]
           ${isCollapsed ? 'right-1/2 translate-x-1/2' : 'right-2'}
         `}
-        aria-label={isCollapsed ? 'Expand menu' : 'Collapse menu'}
+        aria-label={isCollapsed ? 'Expandir menu' : 'Recolher menu'}
       >
         <div className="relative w-6 h-6">
           <AlignLeft 
             className={`
-              absolute inset-0 w-6 h-6 text-secondary
+              absolute inset-0 w-6 h-6 text-app-secondary
               transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
               ${isCollapsed ? 'opacity-100 rotate-0' : 'opacity-0 -rotate-90'}
             `} 
@@ -68,7 +68,7 @@ export function Sidebar() {
           />
           <AlignTopSimple 
             className={`
-              absolute inset-0 w-6 h-6 text-secondary
+              absolute inset-0 w-6 h-6 text-app-secondary
               transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
               ${isCollapsed ? 'opacity-0 rotate-90' : 'opacity-100 rotate-0'}
             `} 
@@ -90,7 +90,7 @@ export function Sidebar() {
       </div>
 
       {/* Menu Items */}
-      <div className="flex-shrink-0 flex flex-col gap-[10px] ml-[9px]">
+      <div className="flex-shrink-0 flex flex-col gap-[10px] items-center">
         {menuItems.map((item, index) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path;
@@ -100,24 +100,26 @@ export function Sidebar() {
               key={item.path}
               to={item.path}
               className={`
-                flex items-center rounded-[10px] h-[48px] overflow-hidden
+                relative flex items-center rounded-[10px] h-[48px] overflow-hidden
                 transition-[width,background-color,border-color] duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]
-                pl-[12px] pr-[14px] gap-[14px]
-                ${isActive 
-                  ? 'bg-primary border border-secondary' 
-                  : 'hover:bg-primary/50 border border-transparent'
+                pl-[12px] pr-[14px]
+                ${isActive
+                  ? 'bg-app-primary border border-app-secondary'
+                  : 'hover:bg-app-primary/50 border border-transparent'
                 }
                 ${isCollapsed ? 'w-[50px]' : 'w-[258px]'}
               `}
               title={isCollapsed ? item.label : ''}
             >
-              <Icon 
-                className="text-secondary flex-shrink-0 w-[26px] h-[26px]"
+              <Icon
+                className="text-app-secondary flex-shrink-0 w-[26px] h-[26px]"
                 weight={isActive ? 'regular' : 'light'}
               />
-              <span 
+              <span
                 className={`
-                  text-base leading-[1.11] text-secondary whitespace-nowrap
+                  absolute top-0 bottom-0 left-0 w-[258px] flex items-center justify-center
+                  text-base leading-[1.11] text-app-secondary whitespace-nowrap
+                  pointer-events-none
                   ${isActive ? 'font-normal' : 'font-light'}
                 `}
               >

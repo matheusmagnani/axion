@@ -12,9 +12,9 @@ const filters: FilterConfig[] = [
     key: 'status',
     label: 'Status',
     options: [
-      { value: 'ACTIVE', label: 'Active' },
-      { value: 'INACTIVE', label: 'Inactive' },
-      { value: 'PENDING', label: 'Pending' },
+      { value: 'ACTIVE', label: 'Ativo' },
+      { value: 'INACTIVE', label: 'Inativo' },
+      { value: 'PENDING', label: 'Pendente' },
     ],
   },
 ];
@@ -22,13 +22,13 @@ const filters: FilterConfig[] = [
 export function AssociatesHeader({ onSearch, onFilterChange, onAdd }: AssociatesHeaderProps) {
   return (
     <PageHeader 
-      title="Associates" 
+      title="Associados"
       icon={UsersThree}
       onSearch={onSearch}
       filters={filters}
       onFilterChange={onFilterChange}
       onAdd={onAdd}
-      addLabel="New Associate"
+      addLabel="Novo Associado"
     />
   );
 }

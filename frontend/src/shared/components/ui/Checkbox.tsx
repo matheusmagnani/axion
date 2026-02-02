@@ -76,18 +76,18 @@ const Checkbox = React.forwardRef<
     <CheckboxPrimitive.Root
       ref={ref}
       className={cn(
-        "grid place-content-center peer shrink-0 rounded-[4px] border border-secondary/40 bg-transparent",
+        "grid place-content-center peer shrink-0 rounded-[4px] border border-app-secondary/40 bg-transparent",
         "ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/50 focus-visible:ring-offset-2",
         "disabled:cursor-not-allowed disabled:opacity-50",
-        "data-[state=checked]:bg-secondary/30 data-[state=checked]:border-secondary",
-        "hover:border-secondary/60 transition-all cursor-pointer",
+        "data-[state=checked]:bg-app-secondary/30 data-[state=checked]:border-app-secondary",
+        "hover:border-app-secondary/60 transition-all cursor-pointer",
         config.box,
         className
       )}
       {...props}
     >
       <CheckboxPrimitive.Indicator
-        className={cn("grid place-content-center text-secondary")}
+        className={cn("grid place-content-center text-app-secondary")}
       >
         {animated ? (
           <AnimatedCheck size={config.icon} strokeWidth={config.stroke} />

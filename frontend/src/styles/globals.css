@@ -10,12 +10,12 @@
   }
 
   body {
-    @apply bg-background text-secondary font-sans;
+    @apply bg-app-bg text-app-secondary font-sans;
     margin: 0;
   }
 
   * {
-    @apply border-secondary/20;
+    @apply border-app-secondary/20;
   }
 }
 
@@ -47,3 +47,17 @@
   scrollbar-width: thin;
   scrollbar-color: rgba(230, 194, 132, 0.3) transparent;
 }
+
+/* Overlay scrollbar - não empurra o conteúdo */
+.scrollbar-overlay {
+  overflow-y: auto;
+}
+
+.scrollbar-overlay::-webkit-scrollbar {
+  width: 0px;
+}
+
+.scrollbar-overlay {
+  scrollbar-width: none;
+}
+
