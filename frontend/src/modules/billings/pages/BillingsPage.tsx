@@ -7,19 +7,19 @@ const filters: FilterConfig[] = [
     key: 'status',
     label: 'Status',
     options: [
-      { value: 'paid', label: 'Paid' },
-      { value: 'pending', label: 'Pending' },
-      { value: 'overdue', label: 'Overdue' },
-      { value: 'cancelled', label: 'Cancelled' },
+      { value: 'paid', label: 'Pago' },
+      { value: 'pending', label: 'Pendente' },
+      { value: 'overdue', label: 'Vencido' },
+      { value: 'cancelled', label: 'Cancelado' },
     ],
   },
   {
     key: 'type',
-    label: 'Type',
+    label: 'Tipo',
     options: [
-      { value: 'monthly', label: 'Monthly' },
-      { value: 'fee', label: 'Fee' },
-      { value: 'penalty', label: 'Penalty' },
+      { value: 'monthly', label: 'Mensalidade' },
+      { value: 'fee', label: 'Taxa' },
+      { value: 'penalty', label: 'Multa' },
     ],
   },
 ];
@@ -36,20 +36,20 @@ export function BillingsPage() {
   };
 
   return (
-    <div className="flex flex-col items-center gap-4 md:gap-[37px] px-3 md:px-6 lg:px-[45px] py-4 md:py-8 lg:py-[49px] w-full">
+    <div className="flex flex-col items-center gap-4 md:gap-[37px] px-2 md:px-4 lg:px-[25px] py-2 md:py-4 lg:py-[25px] w-full">
       <PageHeader 
-        title="Billings" 
+        title="Cobranças"
         icon={CurrencyCircleDollar}
         onSearch={setSearchTerm}
         filters={filters}
         onFilterChange={handleFilterChange}
         onAdd={handleAdd}
-        addLabel="New Billing"
+        addLabel="Nova Cobrança"
       />
       
       <div className="w-full text-center py-20">
-        <p className="text-secondary/70 text-lg">Under development...</p>
-        {searchTerm && <p className="text-secondary/50 text-sm mt-2">Searching: {searchTerm}</p>}
+        <p className="text-app-secondary/70 text-lg">Em desenvolvimento...</p>
+        {searchTerm && <p className="text-app-secondary/50 text-sm mt-2">Buscando: {searchTerm}</p>}
       </div>
     </div>
   );

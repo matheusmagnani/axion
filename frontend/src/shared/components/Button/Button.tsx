@@ -16,9 +16,9 @@ export function Button({
   const baseClasses = 'rounded-[10px] font-medium transition-colors';
   
   const variantClasses = {
-    primary: 'bg-secondary text-primary hover:bg-secondary/90',
-    secondary: 'bg-primary text-secondary border border-secondary hover:bg-primary/80',
-    ghost: 'bg-transparent text-secondary hover:bg-primary/50',
+    primary: 'bg-app-secondary text-app-primary hover:bg-app-secondary/90',
+    secondary: 'bg-app-primary text-app-secondary border border-app-secondary hover:bg-app-primary/80',
+    ghost: 'bg-transparent text-app-secondary hover:bg-app-primary/50',
   };
 
   const sizeClasses = {

@@ -31,12 +31,12 @@ export function Modal({ isOpen, onClose, children, title, className, enableMagic
       {/* Header */}
       {title && (
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-medium text-secondary">{title}</h2>
+          <h2 className="text-xl font-medium text-app-secondary">{title}</h2>
           <button 
             onClick={onClose}
-            className="p-2 hover:bg-secondary/10 rounded-lg transition-colors relative z-10"
+            className="p-2 hover:bg-app-secondary/10 rounded-lg transition-colors relative z-10"
           >
-            <X className="w-5 h-5 text-secondary" weight="bold" />
+            <X className="w-5 h-5 text-app-secondary" weight="bold" />
           </button>
         </div>
       )}
@@ -45,9 +45,9 @@ export function Modal({ isOpen, onClose, children, title, className, enableMagic
       {!title && (
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 hover:bg-secondary/10 rounded-lg transition-colors z-10"
+          className="absolute top-4 right-4 p-2 hover:bg-app-secondary/10 rounded-lg transition-colors z-10"
         >
-          <X className="w-5 h-5 text-secondary" weight="bold" />
+          <X className="w-5 h-5 text-app-secondary" weight="bold" />
         </button>
       )}
       
@@ -69,7 +69,7 @@ export function Modal({ isOpen, onClose, children, title, className, enableMagic
       {enableMagicBento ? (
         <MagicBentoCard
           className={cn(
-            "relative z-10 bg-primary border border-secondary/30 rounded-[15px] p-6",
+            "relative z-10 bg-app-primary border border-app-secondary/30 rounded-[15px] p-6",
             "min-w-[320px] max-w-[90vw] max-h-[90vh] overflow-auto",
             "animate-modalIn shadow-2xl",
             className
@@ -80,7 +80,7 @@ export function Modal({ isOpen, onClose, children, title, className, enableMagic
       ) : (
         <div 
           className={cn(
-            "relative z-10 bg-primary border border-secondary/50 rounded-[15px] p-6",
+            "relative z-10 bg-app-primary border border-app-secondary/50 rounded-[15px] p-6",
             "min-w-[320px] max-w-[90vw] max-h-[90vh] overflow-auto",
             "animate-modalIn shadow-2xl",
             className

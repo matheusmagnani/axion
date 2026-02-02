@@ -2,11 +2,6 @@ import { useState } from 'react';
 import { Input } from '@shared/components/ui';
 import { User, IdentificationCard, Envelope, Phone } from '@phosphor-icons/react';
 
-interface AssociateFormProps {
-  onSubmit: (data: AssociateFormData) => void;
-  onCancel: () => void;
-}
-
 export interface AssociateFormData {
   name: string;
   cpf: string;
@@ -14,15 +9,14 @@ export interface AssociateFormData {
   phone: string;
 }
 
-export function AssociateForm({ onSubmit, onCancel }: AssociateFormProps) {
-  const [formData, setFormData] = useState<AssociateFormData>({
-    name: '',
-    cpf: '',
-    email: '',
-    phone: '',
-  });
+interface AssociateFormProps {
+  onSubmit: (data: AssociateFormData) => void;
+  onCancel: () => void;
+  initialData?: AssociateFormData;
+}
 
-  const [errors, setErrors] = useState<Partial<AssociateFormData>>({});
+export function AssociateForm({ onSubmit, onCancel, initialData }: AssociateFormProps) {
+  const isEdit = !!initialData;
 
   const formatCPF = (value: string) => {
     const cleaned = value.replace(/\D/g, '').slice(0, 11);
@@ -44,6 +38,15 @@ export function AssociateForm({ onSubmit, onCancel }: AssociateFormProps) {
       .replace(/(\d{5})(\d)/, '$1-$2');
   };
 
+  const [formData, setFormData] = useState<AssociateFormData>({
+    name: initialData?.name ?? '',
+    cpf: initialData ? formatCPF(initialData.cpf) : '',
+    email: initialData?.email ?? '',
+    phone: initialData ? formatPhone(initialData.phone) : '',
+  });
+
+  const [errors, setErrors] = useState<Partial<AssociateFormData>>({});
+
   const handleChange = (field: keyof AssociateFormData, value: string) => {
     let formattedValue = value;
 
@@ -54,8 +57,7 @@ export function AssociateForm({ onSubmit, onCancel }: AssociateFormProps) {
     }
 
     setFormData(prev => ({ ...prev, [field]: formattedValue }));
-    
-    // Clear field error when user starts typing
+
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: undefined }));
     }
@@ -65,27 +67,27 @@ export function AssociateForm({ onSubmit, onCancel }: AssociateFormProps) {
     const newErrors: Partial<AssociateFormData> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
+      newErrors.name = 'Nome é obrigatório';
     }
 
     const cpfClean = formData.cpf.replace(/\D/g, '');
     if (!cpfClean) {
-      newErrors.cpf = 'CPF is required';
+      newErrors.cpf = 'CPF é obrigatório';
     } else if (cpfClean.length !== 11) {
-      newErrors.cpf = 'Invalid CPF';
+      newErrors.cpf = 'CPF inválido';
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
+      newErrors.email = 'Email é obrigatório';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Invalid email';
+      newErrors.email = 'Email inválido';
     }
 
     const phoneClean = formData.phone.replace(/\D/g, '');
     if (!phoneClean) {
-      newErrors.phone = 'Phone is required';
+      newErrors.phone = 'Telefone é obrigatório';
     } else if (phoneClean.length < 10) {
-      newErrors.phone = 'Invalid phone';
+      newErrors.phone = 'Telefone inválido';
     }
 
     setErrors(newErrors);
@@ -94,7 +96,7 @@ export function AssociateForm({ onSubmit, onCancel }: AssociateFormProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (validate()) {
       onSubmit(formData);
     }
@@ -102,17 +104,15 @@ export function AssociateForm({ onSubmit, onCancel }: AssociateFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5 min-w-[400px]">
-      {/* Name */}
       <Input
-        label="Full name"
-        placeholder="Enter full name"
+        label="Nome completo"
+        placeholder="Digite o nome completo"
         value={formData.name}
         onChange={(e) => handleChange('name', e.target.value)}
         error={errors.name}
         icon={<User className="w-5 h-5" weight="regular" />}
       />
 
-      {/* CPF */}
       <Input
         label="CPF"
         placeholder="000.000.000-00"
@@ -120,22 +120,21 @@ export function AssociateForm({ onSubmit, onCancel }: AssociateFormProps) {
         onChange={(e) => handleChange('cpf', e.target.value)}
         error={errors.cpf}
         icon={<IdentificationCard className="w-5 h-5" weight="regular" />}
+        disabled={isEdit}
       />
 
-      {/* Email */}
       <Input
         label="Email"
         type="email"
-        placeholder="example@email.com"
+        placeholder="exemplo@email.com"
         value={formData.email}
         onChange={(e) => handleChange('email', e.target.value)}
         error={errors.email}
         icon={<Envelope className="w-5 h-5" weight="regular" />}
       />
 
-      {/* Phone */}
       <Input
-        label="Phone"
+        label="Telefone"
         placeholder="(00) 00000-0000"
         value={formData.phone}
         onChange={(e) => handleChange('phone', e.target.value)}
@@ -143,20 +142,19 @@ export function AssociateForm({ onSubmit, onCancel }: AssociateFormProps) {
         icon={<Phone className="w-5 h-5" weight="regular" />}
       />
 
-      {/* Buttons */}
       <div className="flex items-center justify-end gap-3 mt-4">
         <button
           type="button"
           onClick={onCancel}
-          className="px-6 py-2.5 text-secondary/70 hover:text-secondary transition-colors rounded-[10px] hover:bg-secondary/10"
+          className="px-6 py-2.5 text-app-secondary/70 hover:text-app-secondary transition-colors rounded-[10px] hover:bg-app-secondary/10"
         >
-          Cancel
+          Cancelar
         </button>
         <button
           type="submit"
-          className="px-6 py-2.5 bg-secondary text-primary font-medium rounded-[10px] hover:bg-secondary/90 transition-colors"
+          className="px-6 py-2.5 bg-app-secondary text-app-primary font-medium rounded-[10px] hover:bg-app-secondary/90 transition-colors"
         >
-          Register
+          {isEdit ? 'Salvar' : 'Cadastrar'}
         </button>
       </div>
     </form>

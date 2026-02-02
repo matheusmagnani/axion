@@ -1,8 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { associatesService, type Associate, type CreateAssociateDTO, type UpdateAssociateDTO, type ListAssociatesParams } from '../services/associatesService';
+import { associatesService, type Associate, type CreateAssociateDTO, type UpdateAssociateDTO, type ListAssociatesParams, type PaginatedResponse } from '../services/associatesService';
 
 export function useAssociates(params?: ListAssociatesParams) {
-  return useQuery<Associate[]>({
+  return useQuery<PaginatedResponse<Associate>>({
     queryKey: ['associates', params],
     queryFn: () => associatesService.getAll(params),
   });

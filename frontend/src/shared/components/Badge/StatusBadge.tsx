@@ -4,27 +4,27 @@ interface StatusBadgeProps {
 
 const statusConfig = {
   active: {
-    label: 'Active',
+    label: 'Ativo',
     className: 'bg-green-500/20 text-green-400 border-green-500/50',
   },
   inactive: {
-    label: 'Inactive',
+    label: 'Inativo',
     className: 'bg-red-500/20 text-red-400 border-red-500/50',
   },
   pending: {
-    label: 'Pending',
+    label: 'Pendente',
     className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50',
   },
   ACTIVE: {
-    label: 'Active',
+    label: 'Ativo',
     className: 'bg-green-500/20 text-green-400 border-green-500/50',
   },
   INACTIVE: {
-    label: 'Inactive',
+    label: 'Inativo',
     className: 'bg-red-500/20 text-red-400 border-red-500/50',
   },
   PENDING: {
-    label: 'Pending',
+    label: 'Pendente',
     className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50',
   },
 };

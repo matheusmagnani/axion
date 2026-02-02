@@ -1,55 +1,77 @@
 import { useState } from 'react';
 import { Users } from '@phosphor-icons/react';
 import { PageHeader, type FilterConfig } from '@shared/components/PageHeader';
+import { CollaboratorsTable } from '../components/CollaboratorsTable';
+import { CollaboratorForm, type CollaboratorFormData } from '../components/CollaboratorForm';
+import { useCreateCollaborator } from '../hooks/useCollaborators';
+import { Modal } from '@shared/components/ui';
+import { useToast } from '@shared/hooks/useToast';
 
 const filters: FilterConfig[] = [
   {
-    key: 'status',
+    key: 'active',
     label: 'Status',
     options: [
-      { value: 'active', label: 'Active' },
-      { value: 'inactive', label: 'Inactive' },
-      { value: 'vacation', label: 'Vacation' },
-    ],
-  },
-  {
-    key: 'role',
-    label: 'Role',
-    options: [
-      { value: 'admin', label: 'Administrator' },
-      { value: 'manager', label: 'Manager' },
-      { value: 'attendant', label: 'Attendant' },
+      { value: 'true', label: 'Ativo' },
+      { value: 'false', label: 'Inativo' },
     ],
   },
 ];
 
 export function CollaboratorsPage() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeFilter, setActiveFilter] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const createCollaborator = useCreateCollaborator();
+  const { addToast } = useToast();
 
   const handleFilterChange = (key: string, value: string) => {
-    console.log('Filter changed:', key, value);
-  };
-
-  const handleAdd = () => {
-    console.log('Add new collaborator');
+    if (key === 'active') {
+      setActiveFilter(value);
+    }
   };
 
   return (
-    <div className="flex flex-col items-center gap-4 md:gap-[37px] px-3 md:px-6 lg:px-[45px] py-4 md:py-8 lg:py-[49px] w-full">
-      <PageHeader 
-        title="Collaborators" 
-        icon={Users}
-        onSearch={setSearchTerm}
-        filters={filters}
-        onFilterChange={handleFilterChange}
-        onAdd={handleAdd}
-        addLabel="New Collaborator"
-      />
-      
-      <div className="w-full text-center py-20">
-        <p className="text-secondary/70 text-lg">Under development...</p>
-        {searchTerm && <p className="text-secondary/50 text-sm mt-2">Searching: {searchTerm}</p>}
+    <div className="flex flex-col h-full px-2 md:px-4 lg:px-[25px] py-2 md:py-4 lg:py-[25px] w-full">
+      <div className="flex-shrink-0">
+        <PageHeader
+          title="Colaboradores"
+          icon={Users}
+          onSearch={setSearchTerm}
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          onAdd={() => setIsModalOpen(true)}
+          addLabel="Novo Colaborador"
+        />
       </div>
+
+      <div className="flex-1 min-h-0 mt-4 md:mt-[37px]">
+        <CollaboratorsTable
+          searchTerm={searchTerm}
+          activeFilter={activeFilter}
+        />
+      </div>
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Novo Colaborador"
+      >
+        <CollaboratorForm
+          onSubmit={(data: CollaboratorFormData) => {
+            createCollaborator.mutate(data, {
+              onSuccess: () => {
+                setIsModalOpen(false);
+                addToast('Colaborador criado com sucesso!', 'success');
+              },
+              onError: (error) => {
+                addToast(error.message, 'danger');
+              },
+            });
+          }}
+          onCancel={() => setIsModalOpen(false)}
+        />
+      </Modal>
     </div>
   );
 }

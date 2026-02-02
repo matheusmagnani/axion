@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState, type ReactNode } from 'react';
 import { gsap } from 'gsap';
-import { PlusSquare, MagnifyingGlass, Funnel } from '@phosphor-icons/react';
+import { PlusSquare, MagnifyingGlass, Funnel, X } from '@phosphor-icons/react';
 import type { Icon as PhosphorIcon } from '@phosphor-icons/react';
 import './PageHeader.css';
 
@@ -46,7 +46,7 @@ export function PageHeader({
   filters,
   onFilterChange,
   onAdd,
-  addLabel = 'New',
+  addLabel = 'Novo',
   glowColor = DEFAULT_GLOW_COLOR,
   spotlightRadius = DEFAULT_SPOTLIGHT_RADIUS,
   enableBorderGlow = true,
@@ -172,8 +172,8 @@ export function PageHeader({
       >
         {/* Title */}
         <div className="page-header__title">
-          <Icon className="w-5 md:w-7 h-5 md:h-7 text-secondary" weight="regular" />
-          <h1 className="text-lg md:text-xl lg:text-2xl leading-[1.23] font-semibold text-secondary">
+          <Icon className="w-5 md:w-7 h-5 md:h-7 text-app-secondary" weight="regular" />
+          <h1 className="text-lg md:text-xl lg:text-2xl leading-[1.23] font-semibold text-app-secondary">
             {title}
           </h1>
         </div>
@@ -189,34 +189,50 @@ export function PageHeader({
                   className="flex-shrink-0 transition-transform duration-300 hover:scale-110"
                 >
                   <MagnifyingGlass 
-                    className="w-6 md:w-[26px] h-6 md:h-[26px] text-secondary" 
+                    className="w-6 md:w-[26px] h-6 md:h-[26px] text-app-secondary" 
                     weight="regular" 
                   />
                 </button>
 
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={searchValue}
-                  onChange={handleSearchChange}
-                  onFocus={() => setIsFocused(true)}
-                  onBlur={() => setIsFocused(false)}
-                  placeholder={searchPlaceholder}
-                  className={`
-                    bg-transparent text-secondary outline-none
-                    text-base md:text-[18px]
-                    border border-secondary/50 rounded-[10px] px-3 py-1
-                    transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]
-                    focus:border-secondary
-                    ${isFocused || searchValue ? 'w-[150px] sm:w-[200px] md:w-[280px]' : 'w-[80px] md:w-[100px]'}
-                  `}
-                />
+                <div className="relative">
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={searchValue}
+                    onChange={handleSearchChange}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
+                    placeholder={searchPlaceholder}
+                    className={`
+                      bg-transparent text-app-secondary outline-none
+                      text-sm md:text-base
+                      border border-app-secondary/50 rounded-[10px] px-3 py-1
+                      transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]
+                      focus:border-app-secondary
+                      ${searchValue ? 'pr-8' : ''}
+                      ${isFocused || searchValue ? 'w-[150px] sm:w-[200px] md:w-[280px]' : 'w-[80px] md:w-[100px]'}
+                    `}
+                  />
+                  {searchValue && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearchValue('');
+                        onSearch?.('');
+                        inputRef.current?.focus();
+                      }}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-app-secondary/40 hover:text-app-secondary transition-colors"
+                    >
+                      <X className="w-4 h-4" weight="bold" />
+                    </button>
+                  )}
+                </div>
 
                 {/* Filter Button */}
                 {filters && filters.length > 0 && (
                   <button
                     onClick={() => setShowFilters(!showFilters)}
-                    className={`flex-shrink-0 transition-transform duration-300 hover:scale-110 ${showFilters ? 'text-secondary' : 'text-secondary/70'}`}
+                    className={`flex-shrink-0 transition-transform duration-300 hover:scale-110 ${showFilters ? 'text-app-secondary' : 'text-app-secondary/70'}`}
                   >
                     <Funnel 
                       className="w-6 md:w-[26px] h-6 md:h-[26px]" 
@@ -237,7 +253,7 @@ export function PageHeader({
                 className="flex-shrink-0 transition-transform duration-300 hover:scale-110"
                 title={addLabel}
               >
-                <PlusSquare className="w-8 md:w-10 h-8 md:h-10 text-secondary" weight="fill" />
+                <PlusSquare className="w-8 md:w-10 h-8 md:h-10 text-app-secondary" weight="fill" />
               </button>
             )}
           </div>
@@ -255,13 +271,13 @@ export function PageHeader({
         >
           {filters.map((filter) => (
             <div key={filter.key} className="flex items-center gap-2">
-              <label className="text-sm text-secondary/70">{filter.label}:</label>
+              <label className="text-sm text-app-secondary/70">{filter.label}:</label>
               <select
                 value={filterValues[filter.key] || ''}
                 onChange={(e) => handleFilterChange(filter.key, e.target.value)}
-                className="px-3 py-1.5 bg-primary border border-secondary/30 rounded-[10px] text-secondary text-sm focus:outline-none focus:border-secondary"
+                className="px-3 py-1.5 bg-app-primary border border-app-secondary/30 rounded-[10px] text-app-secondary text-sm focus:outline-none focus:border-app-secondary"
               >
-                <option value="">All</option>
+                <option value="">Todos</option>
                 {filter.options.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
