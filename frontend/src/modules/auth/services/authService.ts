@@ -64,6 +64,16 @@ export const authService = {
     }
   },
 
+  async updateProfile(data: { name?: string; email?: string }): Promise<LoginResponse['user']> {
+    const response = await api.patch<{ user: LoginResponse['user'] }>('/api/auth/profile', data);
+    const user = this.getUser();
+    if (user) {
+      const updated = { ...user, ...response.data.user };
+      localStorage.setItem('user', JSON.stringify(updated));
+    }
+    return response.data.user;
+  },
+
   async register(data: {
     name: string;
     email: string;

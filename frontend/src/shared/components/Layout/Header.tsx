@@ -1,18 +1,37 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Flask, SignOut, Camera, Trash } from '@phosphor-icons/react';
+import { Flask, DoorOpen, PencilSimple } from '@phosphor-icons/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { authService } from '@modules/auth/services/authService';
+import { useToast } from '@shared/hooks/useToast';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3333';
 
 export function Header() {
-  const navigate = useNavigate();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const [editing, setEditing] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const headerBarRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [expandedHeight, setExpandedHeight] = useState(0);
+  const [user, setUser] = useState(authService.getUser());
+  const { addToast } = useToast();
 
-  const user = authService.getUser();
+  useEffect(() => {
+    function calc() {
+      const barH = headerBarRef.current?.offsetHeight || 0;
+      setExpandedHeight(window.innerHeight - barH);
+    }
+    calc();
+    window.addEventListener('resize', calc);
+    return () => window.removeEventListener('resize', calc);
+  }, []);
+
+  const company = user?.company;
   const PREPOSITIONS = new Set(['de', 'da', 'do', 'das', 'dos', 'e']);
   const initials = user?.name
     ? user.name.split(' ').filter((n: string) => !PREPOSITIONS.has(n.toLowerCase())).map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
@@ -26,71 +45,91 @@ export function Header() {
     }
   }, [user?.avatar]);
 
-  function handleLogout() {
-    authService.logout();
-    window.location.href = '/login';
-  }
-
-  async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      const result = await authService.uploadAvatar(file);
-      setAvatarUrl(`${API_URL}/uploads/${result.avatar}`);
-      setMenuOpen(false);
-    } catch (err: any) {
-      alert(err.message || 'Erro ao enviar foto');
-    }
-
-    // Reset input so same file can be selected again
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  }
-
-  async function handleAvatarRemove() {
-    try {
-      await authService.removeAvatar();
-      setAvatarUrl(null);
-      setMenuOpen(false);
-    } catch (err: any) {
-      alert(err.message || 'Erro ao remover foto');
-    }
-  }
-
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false);
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+        setExpanded(false);
+        setEditing(false);
+        setAvatarMenuOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  return (
-    <div className="flex flex-col gap-0 w-full">
-      {/* Test Banner */}
-      <div className="flex items-center justify-center gap-1 py-[4px] md:py-[5px] px-2 bg-app-secondary">
-        <Flask className="w-4 h-4 md:w-5 md:h-5 text-app-primary flex-shrink-0" weight="fill" />
-        <p className="text-[10px] md:text-sm lg:text-base leading-[1.23] font-semibold text-app-primary text-center">
-          <span className="hidden sm:inline">Ambiente de Testes - Você pode experimentar livremente a aplicação sem risco de alterar dados reais.</span>
-          <span className="sm:hidden">Ambiente de Testes</span>
-        </p>
-      </div>
+  function handleLogout() {
+    authService.logout();
+    window.location.href = '/login';
+  }
 
-      {/* User Profile */}
-      <div className="flex items-center justify-between px-4 md:px-[33px] py-2 md:py-[10px] bg-app-primary">
-        {/* Name and Company - Left */}
-        <div className="flex flex-col justify-center items-start font-sans">
-          <p className="text-base md:text-xl lg:text-2xl leading-[1.19] font-medium text-app-secondary text-left">
-            {user?.name || 'Usuário'}
-          </p>
-          <p className="text-xs md:text-sm lg:text-base leading-[1.16] font-normal text-app-secondary/70 text-left">
-            {user?.company?.tradeName || user?.company?.companyName || 'Axion'}
+  function startEditing() {
+    setEditName(user?.name || '');
+    setEditEmail(user?.email || '');
+    setEditing(true);
+    setAvatarMenuOpen(false);
+  }
+
+  function cancelEditing() {
+    setEditing(false);
+    setAvatarMenuOpen(false);
+  }
+
+  async function saveProfile() {
+    setSaving(true);
+    try {
+      const updated = await authService.updateProfile({
+        name: editName,
+        email: editEmail,
+      });
+      setUser({ ...user, ...updated });
+      setEditing(false);
+      addToast('Dados atualizados com sucesso', 'success');
+    } catch (err: any) {
+      addToast(err?.response?.data?.message || err.message || 'Erro ao salvar', 'danger');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const result = await authService.uploadAvatar(file);
+      setAvatarUrl(`${API_URL}/uploads/${result.avatar}`);
+      setUser({ ...user, avatar: result.avatar });
+    } catch (err: any) {
+      alert(err.message || 'Erro ao enviar foto');
+    }
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    setAvatarMenuOpen(false);
+  }
+
+  async function handleRemoveAvatar() {
+    try {
+      await authService.removeAvatar();
+      setAvatarUrl(null);
+      setUser({ ...user, avatar: null });
+    } catch (err: any) {
+      alert(err.message || 'Erro ao remover foto');
+    }
+    setAvatarMenuOpen(false);
+  }
+
+  return (
+    <div ref={wrapperRef} className="relative z-40">
+      <div ref={headerBarRef}>
+        {/* Test Banner */}
+        <div className="flex items-center justify-center gap-1 py-[4px] md:py-[5px] px-2 bg-app-secondary">
+          <Flask className="w-4 h-4 md:w-5 md:h-5 text-app-primary flex-shrink-0" weight="fill" />
+          <p className="text-[10px] md:text-sm lg:text-base leading-[1.23] font-semibold text-app-primary text-center">
+            <span className="hidden sm:inline">Ambiente de Testes - Você pode experimentar livremente a aplicação sem risco de alterar dados reais.</span>
+            <span className="sm:hidden">Ambiente de Testes</span>
           </p>
         </div>
-        {/* Avatar - Right */}
-        <div className="relative" ref={menuRef}>
+
+        {/* Collapsed: compact bar */}
+        <div className="bg-app-primary">
           <input
             ref={fileInputRef}
             type="file"
@@ -98,51 +137,229 @@ export function Header() {
             className="hidden"
             onChange={handleAvatarUpload}
           />
-          <button
-            onClick={() => setMenuOpen((v) => !v)}
-            className={`w-10 h-10 md:w-14 md:h-14 lg:w-[60px] lg:h-[60px] rounded-full flex-shrink-0 flex items-center justify-center cursor-pointer transition-colors overflow-hidden outline-none border-0 p-0 ${avatarUrl ? 'bg-transparent hover:opacity-80' : 'bg-app-secondary/20 border-2 !border-app-secondary hover:bg-app-secondary/30'}`}
-          >
-            {avatarUrl ? (
-              <img
-                src={avatarUrl}
-                alt="Avatar"
-                className="w-full h-full object-cover rounded-full"
-              />
-            ) : (
-              <span className="text-app-secondary font-semibold text-sm md:text-lg lg:text-xl">
-                {initials}
-              </span>
-            )}
-          </button>
 
-          {menuOpen && (
-            <div className="absolute right-0 top-full mt-2 w-44 bg-app-primary border border-app-secondary/20 rounded-lg shadow-lg z-50 overflow-hidden">
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-2 w-full px-4 py-3 text-sm text-app-secondary hover:bg-app-secondary/10 transition-colors"
-              >
-                <Camera className="w-4 h-4" />
-                Trocar foto
-              </button>
-              {avatarUrl && (
-                <button
-                  onClick={handleAvatarRemove}
-                  className="flex items-center gap-2 w-full px-4 py-3 text-sm text-app-secondary hover:bg-app-secondary/10 transition-colors"
+          <motion.div
+            className="flex items-center justify-between"
+            animate={{
+              paddingTop: expanded ? 64 : 8,
+              paddingBottom: expanded ? 24 : 8,
+              paddingLeft: expanded ? 80 : 16,
+              paddingRight: expanded ? 80 : 16,
+            }}
+            transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+          >
+            <div className="flex flex-col items-start">
+              {expanded && editing ? (
+                <input
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="bg-transparent border-b border-app-secondary/50 text-app-secondary text-4xl leading-[1.19] font-medium outline-none w-full"
+                  placeholder="Nome"
+                />
+              ) : (
+                <motion.p
+                  className="leading-[1.19] font-medium text-app-secondary text-left"
+                  initial={false}
+                  animate={{
+                    fontSize: expanded ? '2.25rem' : '1.125rem',
+                  }}
+                  transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
                 >
-                  <Trash className="w-4 h-4" />
-                  Remover foto
+                  {user?.name || 'Usuário'}
+                </motion.p>
+              )}
+              <AnimatePresence mode="wait">
+                {!expanded ? (
+                  <motion.p
+                    key="company"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="text-xs md:text-sm leading-[1.16] font-normal text-app-secondary/70 text-left"
+                  >
+                    {company?.tradeName || company?.companyName || 'Axion'}
+                  </motion.p>
+                ) : (
+                  <motion.div
+                    key="details"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="flex flex-col items-start mt-3"
+                  >
+                    {editing ? (
+                      <input
+                        value={editEmail}
+                        onChange={(e) => setEditEmail(e.target.value)}
+                        className="bg-transparent border-b border-app-secondary/30 text-app-secondary/50 text-base md:text-lg outline-none"
+                        placeholder="Email"
+                      />
+                    ) : (
+                      <p className="text-base md:text-lg text-app-secondary/50">
+                        Email: {user?.email || '—'}
+                      </p>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <div className="relative flex-shrink-0">
+              <motion.button
+                onClick={() => {
+                  if (!editing) setExpanded((v) => !v);
+                }}
+                className={`rounded-full flex items-center justify-center overflow-hidden cursor-pointer border-0 outline-none p-0 ${
+                  avatarUrl ? 'bg-transparent hover:opacity-80' : 'bg-app-secondary/20 border-2 !border-app-secondary hover:bg-app-secondary/30'
+                } transition-opacity`}
+                animate={{
+                  width: expanded ? 96 : 40,
+                  height: expanded ? 96 : 40,
+                }}
+                transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+              >
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover rounded-full" />
+                ) : (
+                  <motion.span
+                    className="text-app-secondary font-semibold"
+                    animate={{ fontSize: expanded ? '1.75rem' : '0.875rem' }}
+                    transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                  >
+                    {initials}
+                  </motion.span>
+                )}
+              </motion.button>
+
+              {/* Edit overlay on avatar when in edit mode */}
+              {expanded && editing && (
+                <button
+                  onClick={() => setAvatarMenuOpen((v) => !v)}
+                  className="absolute bottom-0 right-0 w-8 h-8 bg-app-secondary rounded-full flex items-center justify-center cursor-pointer border-0 shadow-md"
+                >
+                  <PencilSimple className="w-4 h-4 text-app-primary" weight="bold" />
                 </button>
               )}
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 w-full px-4 py-3 text-sm text-app-secondary hover:bg-app-secondary/10 transition-colors"
-              >
-                <SignOut className="w-4 h-4" />
-                Sair
-              </button>
+
+              {/* Avatar edit menu */}
+              {avatarMenuOpen && (
+                <div className="absolute top-full right-0 mt-2 bg-app-secondary rounded-lg shadow-lg overflow-hidden z-50 min-w-[160px]">
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full px-4 py-3 text-left text-sm text-app-primary hover:bg-black/5 cursor-pointer border-0 bg-transparent"
+                  >
+                    Mudar foto
+                  </button>
+                  <button
+                    onClick={handleRemoveAvatar}
+                    className="w-full px-4 py-3 text-left text-sm text-red-600 hover:bg-black/5 cursor-pointer border-0 bg-transparent"
+                  >
+                    Remover foto
+                  </button>
+                </div>
+              )}
             </div>
-          )}
+          </motion.div>
         </div>
+      </div>
+
+      {/* Expanded content */}
+      <div className="bg-app-primary">
+        <AnimatePresence initial={false}>
+          {expanded && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: expandedHeight, opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+              className="overflow-hidden overflow-y-auto"
+            >
+              <div className="px-[80px] pb-4 md:pb-6">
+                {/* Action buttons */}
+                <div className="flex gap-3">
+                  <motion.button
+                    onClick={editing ? cancelEditing : startEditing}
+                    disabled={saving}
+                    initial={false}
+                    animate={{ flex: editing ? 1 : 2 }}
+                    transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+                    className={`relative py-3 md:py-4 font-semibold text-sm md:text-base rounded-lg cursor-pointer disabled:opacity-50 overflow-hidden ${
+                      editing
+                        ? 'bg-transparent text-app-secondary border border-app-secondary/50 hover:bg-app-secondary/10 transition-colors'
+                        : 'bg-app-secondary text-app-primary hover:brightness-110 transition-[filter] border-0'
+                    }`}
+                  >
+                    <AnimatePresence mode="wait">
+                      {editing ? (
+                        <motion.span
+                          key="cancel"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.15 }}
+                        >
+                          Cancelar
+                        </motion.span>
+                      ) : (
+                        <motion.span
+                          key="edit"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.15 }}
+                        >
+                          Editar dados do usuário
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </motion.button>
+                  <motion.button
+                    onClick={saveProfile}
+                    disabled={saving}
+                    initial={false}
+                    animate={{
+                      flex: editing ? 1 : 0,
+                      width: editing ? 'auto' : 0,
+                      opacity: editing ? 1 : 0,
+                      paddingLeft: editing ? 16 : 0,
+                      paddingRight: editing ? 16 : 0,
+                    }}
+                    transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+                    className="py-3 md:py-4 bg-app-secondary text-app-primary font-semibold text-sm md:text-base rounded-lg hover:brightness-110 transition-[filter] cursor-pointer border-0 disabled:opacity-50 overflow-hidden whitespace-nowrap"
+                  >
+                    {saving ? 'Salvando...' : 'Salvar'}
+                  </motion.button>
+                </div>
+
+                {/* Company info */}
+                <div className="mt-44">
+                  <h2 className="text-lg md:text-xl font-medium text-app-secondary/70">
+                    {company?.tradeName || company?.companyName || 'Empresa'}
+                  </h2>
+                  <p className="text-xs md:text-sm text-app-secondary/50 mt-1">
+                    CNPJ: {company?.cnpj || '—'}
+                  </p>
+                  <p className="text-xs md:text-sm text-app-secondary/50">
+                    Departamento: {company?.department || user?.department || '—'}
+                  </p>
+                </div>
+
+                {/* Logout */}
+                <div className="flex justify-end mt-6">
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 text-app-secondary/70 hover:text-app-secondary transition-colors cursor-pointer bg-transparent border-0 outline-none text-sm md:text-base"
+                  >
+                    <DoorOpen className="w-5 h-5 md:w-6 md:h-6" />
+                    Sair
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

@@ -18,3 +18,10 @@ export const registerSchema = z.object({
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;
+
+export const updateProfileSchema = z.object({
+  name: z.string().min(1, 'Nome é obrigatório').optional(),
+  email: z.string().email('Email inválido').optional(),
+});
+
+export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;

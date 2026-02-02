@@ -36,6 +36,7 @@
 | POST | /api/auth/refresh | Sim | Refresh token |
 | PATCH | /api/auth/avatar | Sim | Upload de foto de perfil |
 | DELETE | /api/auth/avatar | Sim | Remover foto de perfil |
+| PATCH | /api/auth/profile | Sim | Atualizar nome/email |
 
 ### Upload de avatars
 
@@ -52,9 +53,10 @@
 - `login`, `register`, `logout`, `isAuthenticated`, `getUser`
 - `uploadAvatar(file)` — PATCH multipart
 - `removeAvatar()` — DELETE
+- `updateProfile({ name?, email? })` — PATCH /api/auth/profile
 
 ### Header
 
 - Avatar exibe foto do usuário ou iniciais
-- Dropdown com: Trocar foto, Remover foto (se tem avatar), Sair
-- Ícones: Camera, Trash, SignOut (phosphor-icons)
+- Modo de edição: nome e email viram inputs, avatar ganha menu (mudar/remover foto), botões Salvar/Cancelar
+- Ícones: PencilSimple, SignOut, Flask (phosphor-icons)
