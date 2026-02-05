@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img src="frontend/public/axion-icon.png" alt="Axion Icon" width="48" />
+  <img src="frontend/public/axion-icon-black.png" alt="Axion Icon" width="48" />
 </p>
 
 <p align="center">

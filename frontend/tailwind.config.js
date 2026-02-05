@@ -11,13 +11,34 @@ export default {
   theme: {
     extend: {
       colors: {
-        'app-bg': 'var(--color-app-bg)',
-        'app-primary': 'var(--color-app-primary)',
-        'app-secondary': 'var(--color-app-secondary)',
-        'app-accent': 'var(--color-app-accent)',
+        'app-bg': 'rgb(var(--color-app-bg-rgb) / <alpha-value>)',
+        'app-primary': 'rgb(var(--color-app-primary-rgb) / <alpha-value>)',
+        'app-secondary': 'rgb(var(--color-app-secondary-rgb) / <alpha-value>)',
+        'app-accent': 'rgb(var(--color-app-accent-rgb) / <alpha-value>)',
+        'app-gray': 'rgb(var(--color-app-gray-rgb) / <alpha-value>)',
       },
       fontFamily: {
         sans: ['DM Sans', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+      },
+      fontSize: {
+        'xs': 'var(--font-size-xs)',
+        'sm': 'var(--font-size-sm)',
+        'base': 'var(--font-size-base)',
+        'lg': 'var(--font-size-lg)',
+        'xl': 'var(--font-size-xl)',
+        '2xl': 'var(--font-size-2xl)',
+        '3xl': 'var(--font-size-3xl)',
+      },
+      fontWeight: {
+        'normal': 'var(--font-weight-normal)',
+        'medium': 'var(--font-weight-medium)',
+        'semibold': 'var(--font-weight-semibold)',
+        'bold': 'var(--font-weight-bold)',
+      },
+      lineHeight: {
+        'tight': 'var(--line-height-tight)',
+        'normal': 'var(--line-height-normal)',
+        'relaxed': 'var(--line-height-relaxed)',
       },
       transitionDuration: {
         '800': '800ms',

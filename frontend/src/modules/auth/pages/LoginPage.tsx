@@ -120,7 +120,7 @@ export function LoginPage() {
   const isLogin = view === 'login';
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-[#1E232C] flex">
+    <div className="relative min-h-screen w-full overflow-hidden bg-app-bg flex">
       {/* Background blur image */}
       <div
         className="absolute inset-0 opacity-20"
@@ -133,7 +133,7 @@ export function LoginPage() {
 
       {/* Diagonal dark overlay */}
       <div
-        className="absolute bg-[#16171C] transition-transform duration-1000 ease-in-out z-[5]"
+        className="absolute bg-app-primary transition-transform duration-1000 ease-in-out z-[5]"
         style={{
           width: '300%',
           height: '300%',
@@ -154,7 +154,7 @@ export function LoginPage() {
           top: '-100%',
           left: '-100%',
           clipPath: 'polygon(60% 0, 60.05% 0, 40.05% 100%, 40% 100%)',
-          background: 'linear-gradient(to bottom, transparent 25%, #E6C284 40%, #E6C284 60%, transparent 75%)',
+          background: 'linear-gradient(to bottom, transparent 25%, var(--color-app-secondary) 40%, var(--color-app-secondary) 60%, transparent 75%)',
           transformOrigin: '50% 50%',
           transform: isLogin ? 'rotate(0deg)' : 'rotate(180deg)',
         }}
@@ -277,7 +277,7 @@ export function LoginPage() {
             className="w-64 xl:w-80"
           />
           <img
-            src="/axion-logo-text.png"
+            src="/axion-logo.png"
             alt="Axion"
             className="mt-4 h-8 xl:h-10 ml-6"
           />
@@ -293,7 +293,7 @@ export function LoginPage() {
         {/* Mobile logo */}
         <div className="lg:hidden mb-10 text-center">
           <img src="/axion-icon-black.png" alt="Axion" className="w-32 mx-auto rounded-2xl" />
-          <img src="/axion-logo-text.png" alt="Axion" className="mt-4 h-8 mx-auto" />
+          <img src="/axion-logo.png" alt="Axion" className="mt-4 h-8 mx-auto" />
         </div>
 
         <div className="w-full max-w-sm">
@@ -316,7 +316,7 @@ export function LoginPage() {
 
           <form onSubmit={handleLogin} className="space-y-5">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-[#E6C284] mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-app-secondary mb-2">
                 Email
               </label>
               <input
@@ -331,7 +331,7 @@ export function LoginPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-[#E6C284] mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-app-secondary mb-2">
                 Senha
               </label>
               <div className="relative">
@@ -347,7 +347,7 @@ export function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowLoginPassword(prev => !prev)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#E6C284]/50 hover:text-[#E6C284] transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-app-secondary/50 hover:text-app-secondary transition-colors"
                 >
                   {showLoginPassword ? <EyeSlash className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -357,16 +357,16 @@ export function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-[#E6C284] text-[#1E232C] font-semibold rounded-lg hover:bg-[#E6C284]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 bg-app-secondary text-app-bg font-semibold rounded-lg hover:bg-app-secondary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Entrando...' : 'Entrar'}
             </button>
 
-            <p className="text-center text-sm text-[#8A919C] mt-4">
+            <p className="text-center text-sm text-app-gray mt-4">
               <button
                 type="button"
                 onClick={() => switchView('register')}
-                className="text-[#E6C284] hover:underline transition-colors"
+                className="text-app-secondary hover:underline transition-colors"
               >
                 Ainda não tenho uma conta
               </button>
@@ -388,7 +388,7 @@ export function LoginPage() {
             className="w-64 xl:w-80"
           />
           <img
-            src="/axion-logo-text.png"
+            src="/axion-logo.png"
             alt="Axion"
             className="mt-4 h-8 xl:h-10"
           />
@@ -404,7 +404,7 @@ export function LoginPage() {
         {/* Mobile logo */}
         <div className="lg:hidden mb-8 text-center">
           <img src="/axion-icon-black.png" alt="Axion" className="w-24 mx-auto rounded-2xl" />
-          <img src="/axion-logo-text.png" alt="Axion" className="mt-3 h-6 mx-auto" />
+          <img src="/axion-logo.png" alt="Axion" className="mt-3 h-6 mx-auto" />
         </div>
 
         <div className="w-full max-w-sm">
@@ -423,18 +423,18 @@ export function LoginPage() {
               onClick={() => setRegStep('user')}
               className={`text-xs font-medium px-3 py-1 rounded-full transition-colors ${
                 regStep === 'user'
-                  ? 'bg-[#E6C284] text-[#1E232C]'
-                  : 'bg-[#E6C284]/10 text-[#E6C284]/50'
+                  ? 'bg-app-secondary text-app-bg'
+                  : 'bg-app-secondary/10 text-app-secondary/50'
               }`}
             >
               1. Usuário
             </button>
-            <div className="w-6 h-px bg-[#E6C284]/30" />
+            <div className="w-6 h-px bg-app-secondary/30" />
             <span
               className={`text-xs font-medium px-3 py-1 rounded-full ${
                 regStep === 'company'
-                  ? 'bg-[#E6C284] text-[#1E232C]'
-                  : 'bg-[#E6C284]/10 text-[#E6C284]/50'
+                  ? 'bg-app-secondary text-app-bg'
+                  : 'bg-app-secondary/10 text-app-secondary/50'
               }`}
             >
               2. Empresa
@@ -445,7 +445,7 @@ export function LoginPage() {
           {regStep === 'user' && (
             <form onSubmit={handleNextStep} className="space-y-4">
               <div>
-                <label htmlFor="reg-name" className="block text-sm font-medium text-[#E6C284] mb-2">
+                <label htmlFor="reg-name" className="block text-sm font-medium text-app-secondary mb-2">
                   Nome
                 </label>
                 <input
@@ -460,7 +460,7 @@ export function LoginPage() {
               </div>
 
               <div>
-                <label htmlFor="reg-email" className="block text-sm font-medium text-[#E6C284] mb-2">
+                <label htmlFor="reg-email" className="block text-sm font-medium text-app-secondary mb-2">
                   Email
                 </label>
                 <input
@@ -475,7 +475,7 @@ export function LoginPage() {
               </div>
 
               <div>
-                <label htmlFor="reg-password" className="block text-sm font-medium text-[#E6C284] mb-2">
+                <label htmlFor="reg-password" className="block text-sm font-medium text-app-secondary mb-2">
                   Senha
                 </label>
                 <div className="relative">
@@ -492,7 +492,7 @@ export function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowRegPassword(prev => !prev)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#E6C284]/50 hover:text-[#E6C284] transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-app-secondary/50 hover:text-app-secondary transition-colors"
                   >
                     {showRegPassword ? <EyeSlash className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -500,7 +500,7 @@ export function LoginPage() {
               </div>
 
               <div>
-                <label htmlFor="reg-confirm-password" className="block text-sm font-medium text-[#E6C284] mb-2">
+                <label htmlFor="reg-confirm-password" className="block text-sm font-medium text-app-secondary mb-2">
                   Confirmar Senha
                 </label>
                 <div className="relative">
@@ -517,7 +517,7 @@ export function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowRegConfirmPassword(prev => !prev)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#E6C284]/50 hover:text-[#E6C284] transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-app-secondary/50 hover:text-app-secondary transition-colors"
                   >
                     {showRegConfirmPassword ? <EyeSlash className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -526,16 +526,16 @@ export function LoginPage() {
 
               <button
                 type="submit"
-                className="w-full py-3 bg-[#E6C284] text-[#1E232C] font-semibold rounded-lg hover:bg-[#E6C284]/90 transition-colors"
+                className="w-full py-3 bg-app-secondary text-app-bg font-semibold rounded-lg hover:bg-app-secondary/90 transition-colors"
               >
                 Próximo
               </button>
 
-              <p className="text-center text-sm text-[#8A919C] mt-4">
+              <p className="text-center text-sm text-app-gray mt-4">
                 <button
                   type="button"
                   onClick={() => switchView('login')}
-                  className="text-[#E6C284] hover:underline transition-colors"
+                  className="text-app-secondary hover:underline transition-colors"
                 >
                   Já tenho uma conta
                 </button>
@@ -547,7 +547,7 @@ export function LoginPage() {
           {regStep === 'company' && (
             <form onSubmit={handleRegister} className="space-y-4">
               <div>
-                <label htmlFor="company-name" className="block text-sm font-medium text-[#E6C284] mb-2">
+                <label htmlFor="company-name" className="block text-sm font-medium text-app-secondary mb-2">
                   Razão Social
                 </label>
                 <input
@@ -562,7 +562,7 @@ export function LoginPage() {
               </div>
 
               <div>
-                <label htmlFor="trade-name" className="block text-sm font-medium text-[#E6C284] mb-2">
+                <label htmlFor="trade-name" className="block text-sm font-medium text-app-secondary mb-2">
                   Nome Fantasia
                 </label>
                 <input
@@ -577,7 +577,7 @@ export function LoginPage() {
               </div>
 
               <div>
-                <label htmlFor="cnpj" className="block text-sm font-medium text-[#E6C284] mb-2">
+                <label htmlFor="cnpj" className="block text-sm font-medium text-app-secondary mb-2">
                   CNPJ
                 </label>
                 <input
@@ -592,7 +592,7 @@ export function LoginPage() {
               </div>
 
               <div>
-                <label htmlFor="department" className="block text-sm font-medium text-[#E6C284] mb-2">
+                <label htmlFor="department" className="block text-sm font-medium text-app-secondary mb-2">
                   Departamento
                 </label>
                 <select
@@ -600,11 +600,11 @@ export function LoginPage() {
                   value={department}
                   onChange={(e) => setDepartment(e.target.value)}
                   required
-                  className={`${inputClass} ${!department ? 'text-[#E6C284]/40' : ''}`}
+                  className={`${inputClass} ${!department ? 'text-app-secondary/40' : ''}`}
                 >
                   <option value="" disabled>Selecione um departamento</option>
                   {DEPARTMENTS.map((dep) => (
-                    <option key={dep} value={dep} className="bg-[#1E232C] text-[#E6C284]">
+                    <option key={dep} value={dep} className="bg-app-bg text-app-secondary">
                       {dep}
                     </option>
                   ))}
@@ -615,24 +615,24 @@ export function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setRegStep('user')}
-                  className="flex-1 py-3 border border-[#E6C284]/40 text-[#E6C284] font-semibold rounded-lg hover:bg-[#E6C284]/10 transition-colors"
+                  className="flex-1 py-3 border border-app-secondary/40 text-app-secondary font-semibold rounded-lg hover:bg-app-secondary/10 transition-colors"
                 >
                   Voltar
                 </button>
                 <button
                   type="submit"
                   disabled={regLoading}
-                  className="flex-1 py-3 bg-[#E6C284] text-[#1E232C] font-semibold rounded-lg hover:bg-[#E6C284]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 py-3 bg-app-secondary text-app-bg font-semibold rounded-lg hover:bg-app-secondary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {regLoading ? 'Cadastrando...' : 'Cadastrar'}
                 </button>
               </div>
 
-              <p className="text-center text-sm text-[#8A919C] mt-4">
+              <p className="text-center text-sm text-app-gray mt-4">
                 <button
                   type="button"
                   onClick={() => switchView('login')}
-                  className="text-[#E6C284] hover:underline transition-colors"
+                  className="text-app-secondary hover:underline transition-colors"
                 >
                   Já tenho uma conta
                 </button>

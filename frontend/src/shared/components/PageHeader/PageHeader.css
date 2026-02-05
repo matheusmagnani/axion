@@ -7,8 +7,8 @@
   width: 100%;
   padding: 1rem 1.5rem;
   border-radius: 14px;
-  border: 1px solid rgba(230, 194, 132, 0.15);
-  background: linear-gradient(145deg, rgba(22, 23, 28, 0.95), rgba(30, 35, 44, 0.95));
+  border: 1px solid rgb(var(--color-app-secondary-rgb) / 0.15);
+  background: linear-gradient(145deg, rgb(var(--color-app-primary-rgb) / 0.95), rgb(var(--color-app-bg-rgb) / 0.95));
   position: relative;
   overflow: hidden;
   transition: all 0.3s ease;
@@ -17,7 +17,7 @@
   --glow-y: 50%;
   --glow-intensity: 0;
   --glow-radius: 300px;
-  --glow-color: 230, 194, 132;
+  --glow-color: var(--color-app-secondary-rgb);
 }
 
 @media (min-width: 640px) {
@@ -28,8 +28,8 @@
 }
 
 .page-header:hover {
-  border-color: rgba(230, 194, 132, 0.25);
-  box-shadow: 0 4px 20px rgba(230, 194, 132, 0.1);
+  border-color: rgb(var(--color-app-secondary-rgb) / 0.25);
+  box-shadow: 0 4px 20px rgb(var(--color-app-secondary-rgb) / 0.1);
 }
 
 .page-header__title {
@@ -75,9 +75,9 @@
   padding: 1px;
   background: radial-gradient(
     var(--glow-radius) circle at var(--glow-x) var(--glow-y),
-    rgba(var(--glow-color), calc(var(--glow-intensity) * 0.35)) 0%,
-    rgba(var(--glow-color), calc(var(--glow-intensity) * 0.18)) 25%,
-    rgba(var(--glow-color), calc(var(--glow-intensity) * 0.05)) 50%,
+    rgb(var(--glow-color) / calc(var(--glow-intensity) * 0.35)) 0%,
+    rgb(var(--glow-color) / calc(var(--glow-intensity) * 0.18)) 25%,
+    rgb(var(--glow-color) / calc(var(--glow-intensity) * 0.05)) 50%,
     transparent 70%
   );
   border-radius: inherit;
@@ -102,8 +102,8 @@
   inset: 0;
   background: radial-gradient(
     var(--glow-radius) circle at var(--glow-x) var(--glow-y),
-    rgba(var(--glow-color), calc(var(--glow-intensity) * 0.035)) 0%,
-    rgba(var(--glow-color), calc(var(--glow-intensity) * 0.015)) 30%,
+    rgb(var(--glow-color) / calc(var(--glow-intensity) * 0.035)) 0%,
+    rgb(var(--glow-color) / calc(var(--glow-intensity) * 0.015)) 30%,
     transparent 60%
   );
   border-radius: inherit;
