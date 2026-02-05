@@ -11,12 +11,16 @@ export default {
   theme: {
     extend: {
       colors: {
-        'app-bg': '#1E232C',
-        'app-primary': '#16171C',
-        'app-secondary': '#E6C284',
+        'app-bg': 'var(--color-app-bg)',
+        'app-primary': 'var(--color-app-primary)',
+        'app-secondary': 'var(--color-app-secondary)',
+        'app-accent': 'var(--color-app-accent)',
       },
       fontFamily: {
         sans: ['DM Sans', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+      },
+      transitionDuration: {
+        '800': '800ms',
       },
     },
   },

@@ -21,7 +21,7 @@ const DEPARTMENTS = [
 ];
 
 const inputClass =
-  'w-full px-4 py-3 bg-transparent border border-app-secondary/30 rounded-lg text-app-secondary placeholder-app-secondary/30 focus:outline-none focus:border-app-secondary/60 transition-colors';
+  'w-full px-4 py-3 bg-app-primary border border-app-secondary/40 rounded-lg text-app-secondary placeholder-app-secondary/40 focus:outline-none focus:border-app-secondary transition-colors';
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -61,7 +61,7 @@ export function LoginPage() {
     setTimeout(() => {
       setContentVisible(true);
       setTransitioning(false);
-    }, 1000);
+    }, 800);
   }
 
   async function handleLogin(e: React.FormEvent) {
@@ -120,52 +120,203 @@ export function LoginPage() {
   const isLogin = view === 'login';
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-app-primary flex">
-      {/* Diagonal background overlay */}
+    <div className="relative min-h-screen w-full overflow-hidden bg-[#1E232C] flex">
+      {/* Background blur image */}
       <div
-        className="absolute bg-app-bg transition-transform duration-1000 ease-in-out"
+        className="absolute inset-0 opacity-20"
+        style={{
+          backgroundImage: 'url(/auth-blur-bg.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      />
+
+      {/* Diagonal dark overlay */}
+      <div
+        className="absolute bg-[#16171C] transition-transform duration-1000 ease-in-out z-[5]"
         style={{
           width: '300%',
           height: '300%',
           top: '-100%',
           left: '-100%',
-          clipPath: 'polygon(0 0, 65% 0, 32% 100%, 0 100%)',
+          clipPath: 'polygon(100% 0, 60% 0, 40% 100%, 100% 100%)',
           transformOrigin: '50% 50%',
           transform: isLogin ? 'rotate(0deg)' : 'rotate(180deg)',
         }}
       />
 
-      {/* Left side — branding (login) */}
+      {/* Golden border line */}
       <div
-        className={`relative z-10 hidden lg:flex flex-col justify-center items-start w-1/2 px-16 xl:px-24 pb-48 transition-opacity duration-400 ${
+        className="absolute transition-transform duration-1000 ease-in-out z-[6]"
+        style={{
+          width: '300%',
+          height: '300%',
+          top: '-100%',
+          left: '-100%',
+          clipPath: 'polygon(60% 0, 60.05% 0, 40.05% 100%, 40% 100%)',
+          background: 'linear-gradient(to bottom, transparent 25%, #E6C284 40%, #E6C284 60%, transparent 75%)',
+          transformOrigin: '50% 50%',
+          transform: isLogin ? 'rotate(0deg)' : 'rotate(180deg)',
+        }}
+      />
+
+      {/* Animated blur balls - RIGHT side (login) */}
+      <div
+        className={`absolute inset-0 z-[7] overflow-hidden pointer-events-none transition-opacity duration-700 ${
+          isLogin ? 'opacity-100' : 'opacity-0'
+        }`}
+      >
+        <div
+          className="absolute w-[150px] h-[150px] rounded-full"
+          style={{
+            background: 'var(--color-app-accent)',
+            filter: 'blur(35px)',
+            top: '10%',
+            right: '3%',
+            animation: 'float1 8s ease-in-out infinite',
+            boxShadow: '0 0 80px 40px var(--color-app-accent)',
+          }}
+        />
+        <div
+          className="absolute w-[180px] h-[180px] rounded-full"
+          style={{
+            background: 'var(--color-app-accent)',
+            filter: 'blur(40px)',
+            top: '55%',
+            right: '30%',
+            animation: 'float2 10s ease-in-out infinite',
+            boxShadow: '0 0 80px 40px var(--color-app-accent)',
+          }}
+        />
+        <div
+          className="absolute w-[220px] h-[220px] rounded-full"
+          style={{
+            background: 'var(--color-app-accent)',
+            filter: 'blur(35px)',
+            bottom: '-15%',
+            right: '-10%',
+            animation: 'float3 12s ease-in-out infinite',
+            boxShadow: '0 0 80px 40px var(--color-app-accent)',
+          }}
+        />
+      </div>
+
+      {/* Animated blur balls - LEFT side (register) */}
+      <div
+        className={`absolute inset-0 z-[7] overflow-hidden pointer-events-none transition-opacity duration-700 ${
+          !isLogin ? 'opacity-100' : 'opacity-0'
+        }`}
+      >
+        {/* Bola extra - canto superior direito, só um pedaço */}
+        <div
+          className="absolute w-[180px] h-[180px] rounded-full"
+          style={{
+            background: 'var(--color-app-accent)',
+            filter: 'blur(35px)',
+            top: '-10%',
+            left: '35%',
+            animation: 'float3 9s ease-in-out infinite',
+            boxShadow: '0 0 80px 40px var(--color-app-accent)',
+          }}
+        />
+        <div
+          className="absolute w-[150px] h-[150px] rounded-full"
+          style={{
+            background: 'var(--color-app-accent)',
+            filter: 'blur(35px)',
+            top: '15%',
+            left: '8%',
+            animation: 'float1 8s ease-in-out infinite',
+            boxShadow: '0 0 80px 40px var(--color-app-accent)',
+          }}
+        />
+        <div
+          className="absolute w-[180px] h-[180px] rounded-full"
+          style={{
+            background: 'var(--color-app-accent)',
+            filter: 'blur(40px)',
+            top: '75%',
+            left: '18%',
+            animation: 'float2 10s ease-in-out infinite',
+            boxShadow: '0 0 80px 40px var(--color-app-accent)',
+          }}
+        />
+      </div>
+
+      <style>{`
+        @keyframes float1 {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          25% { transform: translate(-70px, 50px) scale(1.1); }
+          50% { transform: translate(-40px, 90px) scale(1); }
+          75% { transform: translate(50px, 40px) scale(0.9); }
+        }
+        @keyframes float2 {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          25% { transform: translate(60px, -70px) scale(0.9); }
+          50% { transform: translate(90px, -40px) scale(1.1); }
+          75% { transform: translate(40px, 60px) scale(1); }
+        }
+        @keyframes float3 {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          25% { transform: translate(-60px, -50px) scale(1.1); }
+          50% { transform: translate(-90px, 40px) scale(0.9); }
+          75% { transform: translate(-40px, 70px) scale(1); }
+        }
+      `}</style>
+
+      {/* Left side — branding (login view) */}
+      <div
+        className={`relative z-10 hidden lg:flex flex-col justify-center items-center w-1/2 pb-20 transition-opacity duration-500 ${
           isLogin && contentVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       >
-        <div className="flex flex-col items-center">
-          <img src="/axion-logo.png" alt="Axion" className="w-72 xl:w-96" />
-          <img src="/axion-icon.png" alt="Axion icon" className="mt-6 w-20 h-20 rounded-xl" />
+        <div className="flex flex-col items-start">
+          <img
+            src="/axion-icon-black.png"
+            alt="Axion"
+            className="w-64 xl:w-80"
+          />
+          <img
+            src="/axion-logo-text.png"
+            alt="Axion"
+            className="mt-4 h-8 xl:h-10 ml-6"
+          />
         </div>
       </div>
 
       {/* Right side — login form */}
       <div
-        className={`absolute inset-0 z-10 flex flex-col items-center justify-center px-6 sm:px-12 lg:pl-[50%] transition-opacity duration-400 ${
+        className={`absolute inset-0 z-10 flex flex-col items-center justify-center px-6 sm:px-12 lg:pl-[50%] transition-opacity duration-500 ${
           isLogin && contentVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       >
+        {/* Mobile logo */}
         <div className="lg:hidden mb-10 text-center">
-          <img src="/axion-logo.png" alt="Axion" className="w-48 mx-auto" />
-          <img src="/axion-icon.png" alt="Axion icon" className="mt-4 mx-auto w-12 h-12 rounded-xl" />
+          <img src="/axion-icon-black.png" alt="Axion" className="w-32 mx-auto rounded-2xl" />
+          <img src="/axion-logo-text.png" alt="Axion" className="mt-4 h-8 mx-auto" />
         </div>
 
         <div className="w-full max-w-sm">
-          <p className="text-app-secondary/70 text-base mb-8 text-center">
+          {/* Icon */}
+          <div className="flex justify-center mb-6">
+            <img
+              src="/axion-icon-blue.png"
+              alt="Axion"
+              className="w-[62px] h-[62px] rounded-xl"
+            />
+          </div>
+
+          {/* Title */}
+          <h1 className="text-app-secondary text-3xl font-bold text-center mb-2">
+            Bem vindo de volta!
+          </h1>
+          <p className="text-app-secondary text-lg mb-8 text-center">
             Faça login para continuar
           </p>
 
-          <form onSubmit={handleLogin} className="space-y-6">
+          <form onSubmit={handleLogin} className="space-y-5">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-app-secondary mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-[#E6C284] mb-2">
                 Email
               </label>
               <input
@@ -180,7 +331,7 @@ export function LoginPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-app-secondary mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-[#E6C284] mb-2">
                 Senha
               </label>
               <div className="relative">
@@ -196,7 +347,7 @@ export function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowLoginPassword(prev => !prev)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-app-secondary/40 hover:text-app-secondary transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#E6C284]/50 hover:text-[#E6C284] transition-colors"
                 >
                   {showLoginPassword ? <EyeSlash className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -206,16 +357,16 @@ export function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-app-secondary text-app-primary font-semibold rounded-lg hover:bg-app-secondary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 bg-[#E6C284] text-[#1E232C] font-semibold rounded-lg hover:bg-[#E6C284]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Entrando...' : 'Entrar'}
             </button>
 
-            <p className="text-center text-sm text-app-secondary/60 mt-4">
+            <p className="text-center text-sm text-[#8A919C] mt-4">
               <button
                 type="button"
                 onClick={() => switchView('register')}
-                className="text-app-secondary hover:underline transition-colors"
+                className="text-[#E6C284] hover:underline transition-colors"
               >
                 Ainda não tenho uma conta
               </button>
@@ -224,40 +375,46 @@ export function LoginPage() {
         </div>
       </div>
 
-      {/* Right side — branding (register) */}
+      {/* Right side — branding (register view) */}
       <div
-        className={`absolute right-0 top-0 bottom-0 z-10 hidden lg:flex flex-col justify-center items-center w-1/2 px-16 xl:px-24 pb-48 transition-opacity duration-400 ${
+        className={`absolute right-0 top-0 bottom-0 z-10 hidden lg:flex flex-col justify-center items-center w-1/2 transition-opacity duration-500 ${
           !isLogin && contentVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       >
-        <div className="flex flex-col items-center">
-          <img src="/axion-logo.png" alt="Axion" className="w-72 xl:w-96" />
-          <img src="/axion-icon.png" alt="Axion icon" className="mt-6 w-20 h-20 rounded-xl" />
+        <div className="flex flex-col items-start">
+          <img
+            src="/axion-icon-black.png"
+            alt="Axion"
+            className="w-64 xl:w-80"
+          />
+          <img
+            src="/axion-logo-text.png"
+            alt="Axion"
+            className="mt-4 h-8 xl:h-10"
+          />
         </div>
       </div>
 
       {/* Left side — register form */}
       <div
-        className={`absolute inset-0 z-10 flex flex-col items-center justify-center px-6 sm:px-12 lg:pr-[50%] transition-opacity duration-400 ${
+        className={`absolute inset-0 z-10 flex flex-col items-center justify-center px-6 sm:px-12 lg:pr-[50%] transition-opacity duration-500 ${
           !isLogin && contentVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       >
-        <div className="lg:hidden mb-10 text-center">
-          <img src="/axion-logo.png" alt="Axion" className="w-48 mx-auto" />
-          <img src="/axion-icon.png" alt="Axion icon" className="mt-4 mx-auto w-12 h-12 rounded-xl" />
+        {/* Mobile logo */}
+        <div className="lg:hidden mb-8 text-center">
+          <img src="/axion-icon-black.png" alt="Axion" className="w-24 mx-auto rounded-2xl" />
+          <img src="/axion-logo-text.png" alt="Axion" className="mt-3 h-6 mx-auto" />
         </div>
 
         <div className="w-full max-w-sm">
+          {/* Beta warning */}
           <div className="flex items-center gap-4 px-4 py-3 mb-6 rounded-lg bg-app-secondary/10 border border-app-secondary/20">
             <span className="text-app-secondary text-xs font-semibold whitespace-nowrap">BETA</span>
-            <p className="text-app-secondary/60 text-xs leading-tight">
+            <p className="text-app-secondary/70 text-xs leading-tight">
               Aplicação em fase de testes. Os dados podem ser redefinidos a qualquer momento.
             </p>
           </div>
-
-          <p className="text-app-secondary/70 text-base mb-8 text-center">
-            Crie sua conta
-          </p>
 
           {/* Step indicators */}
           <div className="flex items-center justify-center gap-3 mb-6">
@@ -266,18 +423,18 @@ export function LoginPage() {
               onClick={() => setRegStep('user')}
               className={`text-xs font-medium px-3 py-1 rounded-full transition-colors ${
                 regStep === 'user'
-                  ? 'bg-app-secondary text-app-primary'
-                  : 'bg-app-secondary/10 text-app-secondary/50'
+                  ? 'bg-[#E6C284] text-[#1E232C]'
+                  : 'bg-[#E6C284]/10 text-[#E6C284]/50'
               }`}
             >
               1. Usuário
             </button>
-            <div className="w-6 h-px bg-app-secondary/30" />
+            <div className="w-6 h-px bg-[#E6C284]/30" />
             <span
               className={`text-xs font-medium px-3 py-1 rounded-full ${
                 regStep === 'company'
-                  ? 'bg-app-secondary text-app-primary'
-                  : 'bg-app-secondary/10 text-app-secondary/50'
+                  ? 'bg-[#E6C284] text-[#1E232C]'
+                  : 'bg-[#E6C284]/10 text-[#E6C284]/50'
               }`}
             >
               2. Empresa
@@ -286,9 +443,9 @@ export function LoginPage() {
 
           {/* Step 1: User info */}
           {regStep === 'user' && (
-            <form onSubmit={handleNextStep} className="space-y-5">
+            <form onSubmit={handleNextStep} className="space-y-4">
               <div>
-                <label htmlFor="reg-name" className="block text-sm font-medium text-app-secondary mb-2">
+                <label htmlFor="reg-name" className="block text-sm font-medium text-[#E6C284] mb-2">
                   Nome
                 </label>
                 <input
@@ -303,7 +460,7 @@ export function LoginPage() {
               </div>
 
               <div>
-                <label htmlFor="reg-email" className="block text-sm font-medium text-app-secondary mb-2">
+                <label htmlFor="reg-email" className="block text-sm font-medium text-[#E6C284] mb-2">
                   Email
                 </label>
                 <input
@@ -318,7 +475,7 @@ export function LoginPage() {
               </div>
 
               <div>
-                <label htmlFor="reg-password" className="block text-sm font-medium text-app-secondary mb-2">
+                <label htmlFor="reg-password" className="block text-sm font-medium text-[#E6C284] mb-2">
                   Senha
                 </label>
                 <div className="relative">
@@ -335,7 +492,7 @@ export function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowRegPassword(prev => !prev)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-app-secondary/40 hover:text-app-secondary transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#E6C284]/50 hover:text-[#E6C284] transition-colors"
                   >
                     {showRegPassword ? <EyeSlash className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -343,7 +500,7 @@ export function LoginPage() {
               </div>
 
               <div>
-                <label htmlFor="reg-confirm-password" className="block text-sm font-medium text-app-secondary mb-2">
+                <label htmlFor="reg-confirm-password" className="block text-sm font-medium text-[#E6C284] mb-2">
                   Confirmar Senha
                 </label>
                 <div className="relative">
@@ -360,7 +517,7 @@ export function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowRegConfirmPassword(prev => !prev)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-app-secondary/40 hover:text-app-secondary transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#E6C284]/50 hover:text-[#E6C284] transition-colors"
                   >
                     {showRegConfirmPassword ? <EyeSlash className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -369,16 +526,16 @@ export function LoginPage() {
 
               <button
                 type="submit"
-                className="w-full py-3 bg-app-secondary text-app-primary font-semibold rounded-lg hover:bg-app-secondary/90 transition-colors"
+                className="w-full py-3 bg-[#E6C284] text-[#1E232C] font-semibold rounded-lg hover:bg-[#E6C284]/90 transition-colors"
               >
                 Próximo
               </button>
 
-              <p className="text-center text-sm text-app-secondary/60 mt-4">
+              <p className="text-center text-sm text-[#8A919C] mt-4">
                 <button
                   type="button"
                   onClick={() => switchView('login')}
-                  className="text-app-secondary hover:underline transition-colors"
+                  className="text-[#E6C284] hover:underline transition-colors"
                 >
                   Já tenho uma conta
                 </button>
@@ -388,9 +545,9 @@ export function LoginPage() {
 
           {/* Step 2: Company info */}
           {regStep === 'company' && (
-            <form onSubmit={handleRegister} className="space-y-5">
+            <form onSubmit={handleRegister} className="space-y-4">
               <div>
-                <label htmlFor="company-name" className="block text-sm font-medium text-app-secondary mb-2">
+                <label htmlFor="company-name" className="block text-sm font-medium text-[#E6C284] mb-2">
                   Razão Social
                 </label>
                 <input
@@ -405,7 +562,7 @@ export function LoginPage() {
               </div>
 
               <div>
-                <label htmlFor="trade-name" className="block text-sm font-medium text-app-secondary mb-2">
+                <label htmlFor="trade-name" className="block text-sm font-medium text-[#E6C284] mb-2">
                   Nome Fantasia
                 </label>
                 <input
@@ -420,7 +577,7 @@ export function LoginPage() {
               </div>
 
               <div>
-                <label htmlFor="cnpj" className="block text-sm font-medium text-app-secondary mb-2">
+                <label htmlFor="cnpj" className="block text-sm font-medium text-[#E6C284] mb-2">
                   CNPJ
                 </label>
                 <input
@@ -435,7 +592,7 @@ export function LoginPage() {
               </div>
 
               <div>
-                <label htmlFor="department" className="block text-sm font-medium text-app-secondary mb-2">
+                <label htmlFor="department" className="block text-sm font-medium text-[#E6C284] mb-2">
                   Departamento
                 </label>
                 <select
@@ -443,11 +600,11 @@ export function LoginPage() {
                   value={department}
                   onChange={(e) => setDepartment(e.target.value)}
                   required
-                  className={`${inputClass} ${!department ? 'text-app-secondary/30' : ''}`}
+                  className={`${inputClass} ${!department ? 'text-[#E6C284]/40' : ''}`}
                 >
                   <option value="" disabled>Selecione um departamento</option>
                   {DEPARTMENTS.map((dep) => (
-                    <option key={dep} value={dep} className="bg-app-primary text-app-secondary">
+                    <option key={dep} value={dep} className="bg-[#1E232C] text-[#E6C284]">
                       {dep}
                     </option>
                   ))}
@@ -458,24 +615,24 @@ export function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setRegStep('user')}
-                  className="flex-1 py-3 border border-app-secondary/30 text-app-secondary font-semibold rounded-lg hover:bg-app-secondary/10 transition-colors"
+                  className="flex-1 py-3 border border-[#E6C284]/40 text-[#E6C284] font-semibold rounded-lg hover:bg-[#E6C284]/10 transition-colors"
                 >
                   Voltar
                 </button>
                 <button
                   type="submit"
                   disabled={regLoading}
-                  className="flex-1 py-3 bg-app-secondary text-app-primary font-semibold rounded-lg hover:bg-app-secondary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 py-3 bg-[#E6C284] text-[#1E232C] font-semibold rounded-lg hover:bg-[#E6C284]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {regLoading ? 'Cadastrando...' : 'Cadastrar'}
                 </button>
               </div>
 
-              <p className="text-center text-sm text-app-secondary/60 mt-4">
+              <p className="text-center text-sm text-[#8A919C] mt-4">
                 <button
                   type="button"
                   onClick={() => switchView('login')}
-                  className="text-app-secondary hover:underline transition-colors"
+                  className="text-[#E6C284] hover:underline transition-colors"
                 >
                   Já tenho uma conta
                 </button>
