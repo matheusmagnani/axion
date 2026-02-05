@@ -277,7 +277,7 @@ export function LoginPage() {
             className="w-64 xl:w-80"
           />
           <img
-            src="/axion-logo-text.png"
+            src="/axion-logo.png"
             alt="Axion"
             className="mt-4 h-8 xl:h-10 ml-6"
           />
@@ -293,7 +293,7 @@ export function LoginPage() {
         {/* Mobile logo */}
         <div className="lg:hidden mb-10 text-center">
           <img src="/axion-icon-black.png" alt="Axion" className="w-32 mx-auto rounded-2xl" />
-          <img src="/axion-logo-text.png" alt="Axion" className="mt-4 h-8 mx-auto" />
+          <img src="/axion-logo.png" alt="Axion" className="mt-4 h-8 mx-auto" />
         </div>
 
         <div className="w-full max-w-sm">
@@ -388,7 +388,7 @@ export function LoginPage() {
             className="w-64 xl:w-80"
           />
           <img
-            src="/axion-logo-text.png"
+            src="/axion-logo.png"
             alt="Axion"
             className="mt-4 h-8 xl:h-10"
           />
@@ -404,7 +404,7 @@ export function LoginPage() {
         {/* Mobile logo */}
         <div className="lg:hidden mb-8 text-center">
           <img src="/axion-icon-black.png" alt="Axion" className="w-24 mx-auto rounded-2xl" />
-          <img src="/axion-logo-text.png" alt="Axion" className="mt-3 h-6 mx-auto" />
+          <img src="/axion-logo.png" alt="Axion" className="mt-3 h-6 mx-auto" />
         </div>
 
         <div className="w-full max-w-sm">
