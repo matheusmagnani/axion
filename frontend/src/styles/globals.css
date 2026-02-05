@@ -4,6 +4,13 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-app-bg: #1E232C;
+  --color-app-primary: #16171C;
+  --color-app-secondary: #E6C284;
+  --color-app-accent: #1E232C;
+}
+
 @layer base {
   html {
     font-size: 14px; /* Base menor para diminuir todas as fontes */
