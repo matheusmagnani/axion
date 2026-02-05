@@ -60,3 +60,42 @@
 - Avatar exibe foto do usuário ou iniciais
 - Modo de edição: nome e email viram inputs, avatar ganha menu (mudar/remover foto), botões Salvar/Cancelar
 - Ícones: PencilSimple, SignOut, Flask (phosphor-icons)
+
+### Design Tokens (globals.css)
+
+**Cores:**
+| Variável CSS | Tailwind | Valor |
+|--------------|----------|-------|
+| `--color-app-bg` | `app-bg` | #1E232C |
+| `--color-app-primary` | `app-primary` | #16171C |
+| `--color-app-secondary` | `app-secondary` | #E6C284 |
+| `--color-app-accent` | `app-accent` | #1E232C |
+| `--color-app-gray` | `app-gray` | #8A919C |
+
+Variáveis RGB disponíveis para uso com `rgba()`: `--color-app-*-rgb`
+
+**Tamanhos de Fonte:**
+| Variável CSS | Tailwind | Valor |
+|--------------|----------|-------|
+| `--font-size-xs` | `text-xs` | 0.75rem (12px) |
+| `--font-size-sm` | `text-sm` | 0.875rem (14px) |
+| `--font-size-base` | `text-base` | 1rem (16px) |
+| `--font-size-lg` | `text-lg` | 1.125rem (18px) |
+| `--font-size-xl` | `text-xl` | 1.25rem (20px) |
+| `--font-size-2xl` | `text-2xl` | 1.5rem (24px) |
+| `--font-size-3xl` | `text-3xl` | 1.875rem (30px) |
+
+**Pesos de Fonte:**
+| Variável CSS | Tailwind | Valor |
+|--------------|----------|-------|
+| `--font-weight-normal` | `font-normal` | 400 |
+| `--font-weight-medium` | `font-medium` | 500 |
+| `--font-weight-semibold` | `font-semibold` | 600 |
+| `--font-weight-bold` | `font-bold` | 700 |
+
+**Line Heights:**
+| Variável CSS | Tailwind | Valor |
+|--------------|----------|-------|
+| `--line-height-tight` | `leading-tight` | 1.2 |
+| `--line-height-normal` | `leading-normal` | 1.5 |
+| `--line-height-relaxed` | `leading-relaxed` | 1.75 |

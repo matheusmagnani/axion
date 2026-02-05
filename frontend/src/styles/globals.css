@@ -5,10 +5,39 @@
 @tailwind utilities;
 
 :root {
+  /* Colors */
   --color-app-bg: #1E232C;
   --color-app-primary: #16171C;
   --color-app-secondary: #E6C284;
   --color-app-accent: #1E232C;
+  --color-app-gray: #8A919C;
+
+  /* RGB values for opacity (space-separated for modern CSS rgb(r g b / alpha)) */
+  --color-app-bg-rgb: 30 35 44;
+  --color-app-primary-rgb: 22 23 28;
+  --color-app-secondary-rgb: 230 194 132;
+  --color-app-accent-rgb: 30 35 44;
+  --color-app-gray-rgb: 138 145 156;
+
+  /* Font Sizes */
+  --font-size-xs: 0.75rem;    /* 12px */
+  --font-size-sm: 0.875rem;   /* 14px */
+  --font-size-base: 1rem;     /* 16px */
+  --font-size-lg: 1.125rem;   /* 18px */
+  --font-size-xl: 1.25rem;    /* 20px */
+  --font-size-2xl: 1.5rem;    /* 24px */
+  --font-size-3xl: 1.875rem;  /* 30px */
+
+  /* Font Weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Line Heights */
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
 }
 
 @layer base {
@@ -37,22 +66,22 @@
 }
 
 *::-webkit-scrollbar-thumb {
-  background: rgba(230, 194, 132, 0.3);
+  background: rgb(var(--color-app-secondary-rgb) / 0.3);
   border-radius: 10px;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: rgba(230, 194, 132, 0.5);
+  background: rgb(var(--color-app-secondary-rgb) / 0.5);
 }
 
 *::-webkit-scrollbar-thumb:active {
-  background: rgba(230, 194, 132, 0.8);
+  background: rgb(var(--color-app-secondary-rgb) / 0.8);
 }
 
 /* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(230, 194, 132, 0.3) transparent;
+  scrollbar-color: rgb(var(--color-app-secondary-rgb) / 0.3) transparent;
 }
 
 /* Overlay scrollbar - não empurra o conteúdo */
