@@ -35,7 +35,7 @@ export function AssociatesPage() {
       </div>
 
       {/* Table with scrollable cards */}
-      <div className="flex-1 min-h-0 mt-4 md:mt-[37px]">
+      <div className="flex-1 min-h-0 mt-2">
         <AssociatesTable
           searchTerm={searchTerm}
           statusFilter={statusFilter}

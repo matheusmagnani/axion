@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState, type ReactNode } from 'react';
 import { gsap } from 'gsap';
-import { PlusSquare, MagnifyingGlass, Funnel, X } from '@phosphor-icons/react';
+import { PlusSquare, MagnifyingGlass, Funnel, FunnelX, X } from '@phosphor-icons/react';
 import type { Icon as PhosphorIcon } from '@phosphor-icons/react';
 import './PageHeader.css';
 
@@ -231,13 +231,23 @@ export function PageHeader({
                 {/* Filter Button */}
                 {filters && filters.length > 0 && (
                   <button
-                    onClick={() => setShowFilters(!showFilters)}
+                    onClick={() => {
+                      if (showFilters) {
+                        // Clear all filters when closing
+                        setFilterValues({});
+                        filters.forEach(filter => onFilterChange?.(filter.key, ''));
+                        setShowFilters(false);
+                      } else {
+                        setShowFilters(true);
+                      }
+                    }}
                     className={`flex-shrink-0 transition-transform duration-300 hover:scale-110 ${showFilters ? 'text-app-secondary' : 'text-app-secondary/70'}`}
                   >
-                    <Funnel 
-                      className="w-6 md:w-[26px] h-6 md:h-[26px]" 
-                      weight={showFilters ? 'fill' : 'regular'} 
-                    />
+                    {showFilters ? (
+                      <FunnelX className="w-6 md:w-[26px] h-6 md:h-[26px]" weight="regular" />
+                    ) : (
+                      <Funnel className="w-6 md:w-[26px] h-6 md:h-[26px]" weight="regular" />
+                    )}
                   </button>
                 )}
               </div>

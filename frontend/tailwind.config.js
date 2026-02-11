@@ -16,6 +16,7 @@ export default {
         'app-secondary': 'rgb(var(--color-app-secondary-rgb) / <alpha-value>)',
         'app-accent': 'rgb(var(--color-app-accent-rgb) / <alpha-value>)',
         'app-gray': 'rgb(var(--color-app-gray-rgb) / <alpha-value>)',
+        'app-white': 'rgb(var(--color-app-white-rgb) / <alpha-value>)',
       },
       fontFamily: {
         sans: ['DM Sans', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],

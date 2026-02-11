@@ -270,16 +270,28 @@ export function LoginPage() {
           isLogin && contentVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       >
-        <div className="flex flex-col items-start">
+        <div className="relative flex flex-col items-start">
+          {/* Background blur circle */}
+          <div
+            className="absolute w-[350px] h-[350px] xl:w-[450px] xl:h-[450px] rounded-full pointer-events-none"
+            style={{
+              background: 'var(--color-app-secondary)',
+              filter: 'blur(80px)',
+              opacity: 0.08,
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+            }}
+          />
           <img
             src="/axion-icon-black.png"
             alt="Axion"
-            className="w-64 xl:w-80"
+            className="w-64 xl:w-80 relative z-10"
           />
           <img
             src="/axion-logo.png"
             alt="Axion"
-            className="mt-4 h-8 xl:h-10 ml-6"
+            className="mt-4 h-8 xl:h-10 ml-6 relative z-10"
           />
         </div>
       </div>
@@ -377,21 +389,54 @@ export function LoginPage() {
 
       {/* Right side — branding (register view) */}
       <div
-        className={`absolute right-0 top-0 bottom-0 z-10 hidden lg:flex flex-col justify-center items-center w-1/2 transition-opacity duration-500 ${
+        className={`absolute right-0 top-0 bottom-0 z-10 hidden lg:flex flex-col justify-between w-1/2 px-12 py-8 transition-opacity duration-500 ${
           !isLogin && contentVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       >
-        <div className="flex flex-col items-start">
+        {/* Icon top right */}
+        <div className="flex justify-end pt-4">
           <img
             src="/axion-icon-black.png"
             alt="Axion"
-            className="w-64 xl:w-80"
+            className="w-16 h-16 rounded-xl"
           />
-          <img
-            src="/axion-logo.png"
-            alt="Axion"
-            className="mt-4 h-8 xl:h-10"
+        </div>
+
+        {/* Center content - logo */}
+        <div className="flex justify-center w-full relative -mt-8">
+          {/* Background blur circle */}
+          <div
+            className="absolute w-[300px] h-[300px] xl:w-[400px] xl:h-[400px] rounded-full pointer-events-none"
+            style={{
+              background: 'var(--color-app-secondary)',
+              filter: 'blur(80px)',
+              opacity: 0.08,
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+            }}
           />
+          <div className="flex flex-col items-end relative z-10">
+            <p className="text-app-secondary text-3xl xl:text-4xl font-light italic mb-2">
+              Bem vindo ao
+            </p>
+            <img
+              src="/axion-logo.png"
+              alt="Axion"
+              className="h-24 xl:h-32"
+            />
+          </div>
+        </div>
+
+        {/* Bottom content - texts */}
+        <div className="flex flex-col items-center text-center pb-20 pr-12">
+          <p className="text-app-secondary/70 text-base xl:text-lg leading-relaxed whitespace-nowrap mb-2">
+            cobranças automatizadas, contratos, assinaturas, produtos e controle total de<br />
+            colaboradores, tudo em um ambiente seguro e escalável.
+          </p>
+          <p className="text-app-secondary text-xl xl:text-2xl font-semibold whitespace-nowrap">
+            Sua gestão não pode depender de planilhas e sistemas limitados.
+          </p>
         </div>
       </div>
 

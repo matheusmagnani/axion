@@ -36,7 +36,7 @@ export function BillingsPage() {
   };
 
   return (
-    <div className="flex flex-col items-center gap-4 md:gap-[37px] px-2 md:px-4 lg:px-[25px] py-2 md:py-4 lg:py-[25px] w-full">
+    <div className="flex flex-col items-center gap-2 px-2 md:px-4 lg:px-[25px] py-2 md:py-4 lg:py-[25px] w-full">
       <PageHeader 
         title="Cobranças"
         icon={CurrencyCircleDollar}
