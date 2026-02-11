@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Flask, DoorOpen, PencilSimple } from '@phosphor-icons/react';
+import { Flask, DoorOpen, PencilSimple, CaretUp } from '@phosphor-icons/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { authService } from '@modules/auth/services/authService';
 import { useToast } from '@shared/hooks/useToast';
@@ -99,7 +99,8 @@ export function Header() {
       setAvatarUrl(`${API_URL}/uploads/${result.avatar}`);
       setUser({ ...user, avatar: result.avatar });
     } catch (err: any) {
-      alert(err.message || 'Erro ao enviar foto');
+      const errorMessage = err?.response?.data?.message || err.message || 'Erro ao enviar foto';
+      addToast(errorMessage, 'danger');
     }
     if (fileInputRef.current) fileInputRef.current.value = '';
     setAvatarMenuOpen(false);
@@ -111,7 +112,7 @@ export function Header() {
       setAvatarUrl(null);
       setUser({ ...user, avatar: null });
     } catch (err: any) {
-      alert(err.message || 'Erro ao remover foto');
+      addToast(err.message || 'Erro ao remover foto', 'danger');
     }
     setAvatarMenuOpen(false);
   }
@@ -129,7 +130,7 @@ export function Header() {
         </div>
 
         {/* Collapsed: compact bar */}
-        <div className="bg-app-primary">
+        <div className="bg-app-primary border-l border-app-secondary/30">
           <input
             ref={fileInputRef}
             type="file"
@@ -153,7 +154,7 @@ export function Header() {
                 <input
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="bg-transparent border-b border-app-secondary/50 text-app-secondary text-4xl leading-[1.19] font-medium outline-none w-full"
+                  className="bg-transparent border border-app-secondary/50 rounded-lg px-4 py-2 text-app-secondary text-4xl leading-[1.19] font-medium outline-none w-full focus:border-app-secondary transition-colors"
                   placeholder="Nome"
                 />
               ) : (
@@ -193,7 +194,7 @@ export function Header() {
                       <input
                         value={editEmail}
                         onChange={(e) => setEditEmail(e.target.value)}
-                        className="bg-transparent border-b border-app-secondary/30 text-app-secondary/50 text-base md:text-lg outline-none"
+                        className="bg-transparent border border-app-secondary/30 rounded-lg px-4 py-2 text-app-secondary/70 text-base md:text-lg outline-none focus:border-app-secondary/50 transition-colors"
                         placeholder="Email"
                       />
                     ) : (
@@ -209,11 +210,11 @@ export function Header() {
             <div className="relative flex-shrink-0">
               <motion.button
                 onClick={() => {
-                  if (!editing) setExpanded((v) => !v);
+                  if (!editing && !expanded) setExpanded(true);
                 }}
                 className={`rounded-full flex items-center justify-center overflow-hidden cursor-pointer border-0 outline-none p-0 ${
-                  avatarUrl ? 'bg-transparent hover:opacity-80' : 'bg-app-secondary/20 border-2 !border-app-secondary hover:bg-app-secondary/30'
-                } transition-opacity`}
+                  avatarUrl ? 'bg-transparent' : 'bg-app-secondary/20 border-2 !border-app-secondary'
+                }`}
                 animate={{
                   width: expanded ? 96 : 40,
                   height: expanded ? 96 : 40,
@@ -248,16 +249,18 @@ export function Header() {
                 <div className="absolute top-full right-0 mt-2 bg-app-secondary rounded-lg shadow-lg overflow-hidden z-50 min-w-[160px]">
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-full px-4 py-3 text-left text-sm text-app-primary hover:bg-black/5 cursor-pointer border-0 bg-transparent"
+                    className="w-full px-4 py-3 text-center text-sm text-app-primary hover:bg-black/5 cursor-pointer border-0 bg-transparent"
                   >
-                    Mudar foto
+                    {avatarUrl ? 'Mudar foto' : 'Adicionar foto'}
                   </button>
-                  <button
-                    onClick={handleRemoveAvatar}
-                    className="w-full px-4 py-3 text-left text-sm text-red-600 hover:bg-black/5 cursor-pointer border-0 bg-transparent"
-                  >
-                    Remover foto
-                  </button>
+                  {avatarUrl && (
+                    <button
+                      onClick={handleRemoveAvatar}
+                      className="w-full px-4 py-3 text-center text-sm text-red-600 hover:bg-black/5 cursor-pointer border-0 bg-transparent"
+                    >
+                      Remover foto
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -266,7 +269,7 @@ export function Header() {
       </div>
 
       {/* Expanded content */}
-      <div className="bg-app-primary">
+      <div className="bg-app-primary border-l border-app-secondary/30">
         <AnimatePresence initial={false}>
           {expanded && (
             <motion.div
@@ -278,63 +281,31 @@ export function Header() {
             >
               <div className="px-[80px] pb-4 md:pb-6">
                 {/* Action buttons */}
-                <div className="flex gap-3">
-                  <motion.button
+                <div className="flex gap-3 mb-44">
+                  <button
                     onClick={editing ? cancelEditing : startEditing}
                     disabled={saving}
-                    initial={false}
-                    animate={{ flex: editing ? 1 : 2 }}
-                    transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-                    className={`relative py-3 md:py-4 font-semibold text-sm md:text-base rounded-lg cursor-pointer disabled:opacity-50 overflow-hidden ${
+                    className={`px-8 py-3 font-semibold text-sm rounded-lg cursor-pointer disabled:opacity-50 ${
                       editing
-                        ? 'bg-transparent text-app-secondary border border-app-secondary/50 hover:bg-app-secondary/10 transition-colors'
-                        : 'bg-app-secondary text-app-primary hover:brightness-110 transition-[filter] border-0'
+                        ? 'bg-transparent text-app-secondary border border-app-secondary/50 hover:bg-app-secondary/10 min-w-[120px]'
+                        : 'bg-app-secondary text-app-primary hover:brightness-110 border-0'
                     }`}
                   >
-                    <AnimatePresence mode="wait">
-                      {editing ? (
-                        <motion.span
-                          key="cancel"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          transition={{ duration: 0.15 }}
-                        >
-                          Cancelar
-                        </motion.span>
-                      ) : (
-                        <motion.span
-                          key="edit"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          transition={{ duration: 0.15 }}
-                        >
-                          Editar dados do usuário
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
-                  </motion.button>
-                  <motion.button
-                    onClick={saveProfile}
-                    disabled={saving}
-                    initial={false}
-                    animate={{
-                      flex: editing ? 1 : 0,
-                      width: editing ? 'auto' : 0,
-                      opacity: editing ? 1 : 0,
-                      paddingLeft: editing ? 16 : 0,
-                      paddingRight: editing ? 16 : 0,
-                    }}
-                    transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-                    className="py-3 md:py-4 bg-app-secondary text-app-primary font-semibold text-sm md:text-base rounded-lg hover:brightness-110 transition-[filter] cursor-pointer border-0 disabled:opacity-50 overflow-hidden whitespace-nowrap"
-                  >
-                    {saving ? 'Salvando...' : 'Salvar'}
-                  </motion.button>
+                    {editing ? 'Cancelar' : 'Editar dados do usuário'}
+                  </button>
+                  {editing && (
+                    <button
+                      onClick={saveProfile}
+                      disabled={saving}
+                      className="px-8 py-3 bg-app-secondary text-app-primary font-semibold text-sm rounded-lg hover:brightness-110 cursor-pointer border-0 disabled:opacity-50 min-w-[120px]"
+                    >
+                      {saving ? 'Salvando...' : 'Salvar'}
+                    </button>
+                  )}
                 </div>
 
                 {/* Company info */}
-                <div className="mt-44">
+                <div>
                   <h2 className="text-lg md:text-xl font-medium text-app-secondary/70">
                     {company?.tradeName || company?.companyName || 'Empresa'}
                   </h2>
@@ -354,6 +325,20 @@ export function Header() {
                   >
                     <DoorOpen className="w-5 h-5 md:w-6 md:h-6" />
                     Sair
+                  </button>
+                </div>
+
+                {/* Collapse button */}
+                <div className="flex justify-center mt-32">
+                  <button
+                    onClick={() => {
+                      setExpanded(false);
+                      setEditing(false);
+                      setAvatarMenuOpen(false);
+                    }}
+                    className="p-3 rounded-full bg-app-secondary/10 hover:bg-app-secondary/20 transition-colors cursor-pointer border-0 outline-none"
+                  >
+                    <CaretUp className="w-6 h-6 text-app-secondary" weight="bold" />
                   </button>
                 </div>
               </div>

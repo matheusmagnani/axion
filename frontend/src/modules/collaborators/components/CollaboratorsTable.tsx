@@ -4,6 +4,7 @@ import { List, CaretLeft, CaretRight, ToggleLeft, ToggleRight, Key } from '@phos
 import { useCollaborators, useToggleCollaboratorActive, useChangeCollaboratorPassword } from '../hooks/useCollaborators';
 import { Checkbox } from '@shared/components/ui/Checkbox';
 import { Modal } from '@shared/components/ui';
+import { ListCard } from '@shared/components/ListCard';
 import { ChangePasswordForm } from './ChangePasswordForm';
 import { useToast } from '@shared/hooks/useToast';
 import { authService } from '@modules/auth/services/authService';
@@ -87,7 +88,7 @@ export function CollaboratorsTable({ searchTerm = '', activeFilter = '' }: Colla
   return (
     <div className="flex flex-col h-full w-full">
       {meta && (
-        <div className="flex-shrink-0 flex items-center justify-end gap-4 mb-[10px] py-3 px-4">
+        <div className="flex-shrink-0 flex items-center justify-end gap-4 py-2 px-4">
           <span className="text-app-secondary/70 text-sm">
             Mostrando {collaborators.length} de {meta.total}
           </span>
@@ -130,35 +131,19 @@ export function CollaboratorsTable({ searchTerm = '', activeFilter = '' }: Colla
       {/* Rows */}
       <div className="flex-1 overflow-y-auto mt-[10px] flex flex-col gap-[10px] scrollbar-overlay">
         {collaborators.length === 0 ? (
-          <div className="px-5 py-10 text-center text-app-secondary/70 bg-[#16171C]/[0.36] rounded-[10px] border-[0.5px] border-app-secondary/50">
+          <div className="px-5 py-10 text-center text-app-secondary/70 bg-app-primary/50 rounded-[10px] border-[0.5px] border-app-secondary/50">
             Nenhum colaborador encontrado
           </div>
         ) : (
           collaborators.map((collaborator) => {
             const isSelected = selectedIds.has(collaborator.id);
             return (
-              <div
+              <ListCard
                 key={collaborator.id}
-                data-card
-                className="flex-shrink-0 grid grid-cols-[50px_1fr_1fr_120px_60px] items-center bg-[#16171C]/[0.36] py-4 px-4 rounded-[10px] border-[0.5px] border-app-secondary/30 relative"
+                isSelected={isSelected}
+                onSelect={() => toggleSelect(collaborator.id)}
+                columns="grid-cols-[50px_1fr_1fr_120px_60px]"
               >
-                <div
-                  className={`
-                    absolute inset-0 rounded-[10px] border-[0.5px] border-app-secondary pointer-events-none
-                    transition-all duration-500 ease-out
-                    ${isSelected ? 'opacity-100' : 'opacity-0'}
-                  `}
-                  style={{
-                    clipPath: isSelected ? 'inset(0 0 0 0)' : 'inset(0 100% 0 0)',
-                  }}
-                />
-                <div className="flex items-center justify-center">
-                  <Checkbox
-                    checked={isSelected}
-                    onCheckedChange={() => toggleSelect(collaborator.id)}
-                  />
-                </div>
-
                 <div className="flex flex-col items-center gap-1">
                   <div className="flex items-center gap-2">
                     <span className="text-app-secondary/80 text-base font-light">
@@ -200,7 +185,7 @@ export function CollaboratorsTable({ searchTerm = '', activeFilter = '' }: Colla
                   {openMenuId === collaborator.id && createPortal(
                     <div
                       ref={menuRef}
-                      className="fixed z-50 bg-[#1E1F26] border border-app-secondary/20 rounded-lg shadow-lg w-[160px]"
+                      className="fixed z-50 bg-app-primary border border-app-secondary/20 rounded-lg shadow-lg w-[160px]"
                       style={{ top: menuPos.top, right: menuPos.right, transform: 'translateY(-15px)' }}
                     >
                       <button
@@ -247,7 +232,7 @@ export function CollaboratorsTable({ searchTerm = '', activeFilter = '' }: Colla
                     document.body
                   )}
                 </div>
-              </div>
+              </ListCard>
             );
           })
         )}

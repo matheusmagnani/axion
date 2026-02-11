@@ -7,6 +7,11 @@ const dangerClassNames = {
   iconWrapper: '!bg-red-500/25 !border-none !shadow-none',
   alertIcon: '!text-red-600 [&>path]:!fill-red-600',
   closeButton: '!text-red-500 hover:!bg-red-200',
+  title: 'whitespace-pre-line',
+};
+
+const defaultClassNames = {
+  title: 'whitespace-pre-line',
 };
 
 export function ToastContainer() {
@@ -28,7 +33,7 @@ export function ToastContainer() {
               title={toast.message}
               isClosable
               onClose={() => removeToast(toast.id)}
-              {...(toast.type === 'danger' ? { classNames: dangerClassNames } : {})}
+              classNames={toast.type === 'danger' ? dangerClassNames : defaultClassNames}
             />
           </motion.div>
         ))}

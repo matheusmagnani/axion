@@ -41,6 +41,15 @@ export function errorHandler(
     });
   }
 
+  // Erro de arquivo muito grande (multipart)
+  if (error.code === 'FST_REQ_FILE_TOO_LARGE' || error.message?.includes('file too large')) {
+    return reply.status(400).send({
+      statusCode: 400,
+      error: 'Erro de Validação',
+      message: 'Arquivo muito grande.\nTamanho máximo: 5MB',
+    });
+  }
+
   // Erro interno (500)
   return reply.status(500).send({
     statusCode: 500,

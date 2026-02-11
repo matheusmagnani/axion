@@ -41,7 +41,7 @@ export class AuthController {
     const buffer = await file.toBuffer();
 
     if (buffer.length > 5 * 1024 * 1024) {
-      throw new ValidationError('Arquivo muito grande. Tamanho máximo: 5MB');
+      throw new ValidationError('Arquivo muito grande.\nTamanho máximo: 5MB');
     }
 
     const { userId } = request.user;
