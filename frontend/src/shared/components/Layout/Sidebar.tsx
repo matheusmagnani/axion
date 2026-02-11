@@ -94,7 +94,7 @@ export function Sidebar() {
         {menuItems.map((item, index) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path;
-          
+
           return (
             <Link
               key={item.path}
@@ -128,6 +128,19 @@ export function Sidebar() {
             </Link>
           );
         })}
+      </div>
+
+      {/* Footer - Version */}
+      <div className="mt-auto pb-4 flex justify-center">
+        <span
+          className={`
+            text-xs text-app-secondary/50 font-light
+            transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]
+            ${isCollapsed ? 'opacity-0' : 'opacity-100'}
+          `}
+        >
+          v{__APP_VERSION__}
+        </span>
       </div>
     </div>
   );
