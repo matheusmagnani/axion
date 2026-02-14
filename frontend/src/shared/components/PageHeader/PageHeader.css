@@ -5,6 +5,7 @@
   justify-content: space-between;
   gap: 1rem;
   width: 100%;
+  min-height: 72px;
   padding: 1rem 1.5rem;
   border-radius: 14px;
   border: 1px solid rgb(var(--color-app-secondary-rgb) / 0.15);

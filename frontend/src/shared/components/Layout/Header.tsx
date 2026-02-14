@@ -279,7 +279,7 @@ export function Header() {
               transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
               className="overflow-hidden overflow-y-auto"
             >
-              <div className="px-[80px] pb-4 md:pb-6">
+              <div className="px-[80px] pb-4 md:pb-6 relative h-full">
                 {/* Action buttons */}
                 <div className="flex gap-3 mb-44">
                   <button
@@ -306,15 +306,49 @@ export function Header() {
 
                 {/* Company info */}
                 <div>
-                  <h2 className="text-lg md:text-xl font-medium text-app-secondary/70">
+                  <h2 className="text-lg md:text-xl font-medium text-app-secondary">
                     {company?.tradeName || company?.companyName || 'Empresa'}
                   </h2>
-                  <p className="text-xs md:text-sm text-app-secondary/50 mt-1">
-                    CNPJ: {company?.cnpj || '—'}
+                  <p className="text-xs md:text-sm text-app-secondary/70 mt-1">
+                    {company?.companyName && company?.tradeName && (
+                      <span className="block">Razão Social: {company.companyName}</span>
+                    )}
                   </p>
-                  <p className="text-xs md:text-sm text-app-secondary/50">
-                    Departamento: {company?.department || user?.department || '—'}
-                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1 mt-4">
+                    <p className="text-xs md:text-sm text-app-secondary/50">
+                      CNPJ: {company?.cnpj || '—'}
+                    </p>
+                    <p className="text-xs md:text-sm text-app-secondary/50">
+                      Departamento: {company?.department || '—'}
+                    </p>
+                    <p className="text-xs md:text-sm text-app-secondary/50">
+                      Email: {company?.email || '—'}
+                    </p>
+                    <p className="text-xs md:text-sm text-app-secondary/50">
+                      Telefone: {company?.phone || '—'}
+                    </p>
+                  </div>
+
+                  {(company?.address || company?.city) && (
+                    <div className="mt-4 pt-4 border-t border-app-secondary/10">
+                      <p className="text-xs md:text-sm text-app-secondary/50">
+                        {company?.address && (
+                          <>
+                            {company.address}
+                            {company?.addressNumber && `, ${company.addressNumber}`}
+                            {company?.complement && ` - ${company.complement}`}
+                          </>
+                        )}
+                      </p>
+                      <p className="text-xs md:text-sm text-app-secondary/50">
+                        {company?.neighborhood && `${company.neighborhood} - `}
+                        {company?.city && company.city}
+                        {company?.state && `/${company.state}`}
+                        {company?.zipCode && ` - CEP: ${company.zipCode}`}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Logout */}
@@ -328,8 +362,8 @@ export function Header() {
                   </button>
                 </div>
 
-                {/* Collapse button */}
-                <div className="flex justify-center mt-32">
+                {/* Collapse button - fixed at bottom */}
+                <div className="absolute bottom-45 left-1/2 -translate-x-1/2">
                   <button
                     onClick={() => {
                       setExpanded(false);

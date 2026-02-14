@@ -35,6 +35,15 @@ model Company {
   tradeName   String?  @map("trade_name")
   cnpj        String   @unique
   department  String?
+  email       String?
+  phone       String?
+  address       String?
+  addressNumber String?  @map("address_number")
+  complement    String?
+  neighborhood  String?
+  city        String?
+  state       String?
+  zipCode     String?  @map("zip_code")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
