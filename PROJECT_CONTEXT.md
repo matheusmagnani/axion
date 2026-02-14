@@ -21,11 +21,13 @@
 - **auth** — login, register, refresh, upload/remove avatar
 - **associates** — CRUD de associados
 - **collaborators** — CRUD de colaboradores
+- **settings** — configurações da empresa (GET/PUT company info)
 
 ### Models (Prisma)
 
 - Company, User, Associate, Contract, Billing
 - User possui campo `avatar` (String?) — caminho relativo do arquivo
+- Company possui campos de contato: email, phone, address, neighborhood, city, state, zipCode
 
 ### Endpoints de Auth
 
@@ -37,6 +39,13 @@
 | PATCH | /api/auth/avatar | Sim | Upload de foto de perfil |
 | DELETE | /api/auth/avatar | Sim | Remover foto de perfil |
 | PATCH | /api/auth/profile | Sim | Atualizar nome/email |
+
+### Endpoints de Settings
+
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| GET | /api/settings/company | Sim | Buscar informações da empresa |
+| PUT | /api/settings/company | Sim | Atualizar informações da empresa |
 
 ### Upload de avatars
 
@@ -99,3 +108,29 @@ Variáveis RGB disponíveis para uso com `rgba()`: `--color-app-*-rgb`
 | `--line-height-tight` | `leading-tight` | 1.2 |
 | `--line-height-normal` | `leading-normal` | 1.5 |
 | `--line-height-relaxed` | `leading-relaxed` | 1.75 |
+
+### Módulo Settings (Configurações)
+
+Página de configurações com múltiplos módulos/seções:
+
+**Estrutura:**
+```
+modules/settings/
+├── pages/
+│   └── SettingsPage.tsx
+├── components/
+│   ├── SettingsSection.tsx      # Componente base para seções expansíveis
+│   └── CompanyInfoSection.tsx   # Seção de informações da empresa
+├── hooks/
+│   └── useSettings.ts           # Hooks React Query (useCompanyInfo, useUpdateCompanyInfo)
+└── services/
+    └── settingsService.ts       # API service
+```
+
+**Seções implementadas:**
+- **Informações da Empresa** — nome, nome fantasia, CNPJ, departamento, email, telefone, endereço (rua, bairro, cidade, estado, CEP)
+
+**Seções planejadas:**
+- Produtos
+- Permissões
+- Setores de usuários

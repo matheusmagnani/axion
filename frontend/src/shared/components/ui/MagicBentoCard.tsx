@@ -31,16 +31,14 @@ export function MagicBentoCard({
     spotlight.className = 'magic-bento-spotlight';
     spotlight.style.cssText = `
       position: fixed;
-      width: 500px;
-      height: 500px;
+      width: 400px;
+      height: 400px;
       border-radius: 50%;
       pointer-events: none;
       background: radial-gradient(circle,
-        rgba(${glowColor}, 0.15) 0%,
-        rgba(${glowColor}, 0.08) 20%,
-        rgba(${glowColor}, 0.04) 35%,
-        rgba(${glowColor}, 0.02) 50%,
-        transparent 65%
+        rgba(${glowColor}, 0.03) 0%,
+        rgba(${glowColor}, 0.015) 30%,
+        transparent 60%
       );
       z-index: 200;
       opacity: 0;
@@ -81,7 +79,7 @@ export function MagicBentoCard({
       gsap.to(spotlight, {
         left: e.clientX,
         top: e.clientY,
-        opacity: 0.8,
+        opacity: 0.5,
         duration: 0.1,
         ease: 'power2.out'
       });
@@ -159,19 +157,6 @@ export function MagicBentoCard({
           z-index: 1;
         }
 
-        .magic-bento-card--border-glow::after {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background: radial-gradient(
-            calc(var(--glow-radius) * 0.8) circle at var(--glow-x) var(--glow-y),
-            rgba(var(--glow-color), calc(var(--glow-intensity) * 0.08)) 0%,
-            transparent 60%
-          );
-          border-radius: inherit;
-          pointer-events: none;
-          z-index: 0;
-        }
       `}</style>
     </div>
   );

@@ -34,10 +34,21 @@ export function errorHandler(
 
   // Erro do Prisma - Unique constraint
   if (error.message?.includes('Unique constraint')) {
+    let message = 'Registro já existe';
+
+    // Identifica qual campo causou o conflito
+    if (error.message.includes('email')) {
+      message = 'Email já cadastrado';
+    } else if (error.message.includes('cnpj')) {
+      message = 'CNPJ já cadastrado';
+    } else if (error.message.includes('cpf')) {
+      message = 'CPF já cadastrado';
+    }
+
     return reply.status(409).send({
       statusCode: 409,
       error: 'Conflito',
-      message: 'Registro já existe',
+      message,
     });
   }
 

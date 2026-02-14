@@ -3,6 +3,7 @@ import { Layout } from '@shared/components/Layout/Layout';
 import { AssociatesPage } from '@modules/associates/pages/AssociatesPage';
 import { BillingsPage } from '@modules/billings/pages/BillingsPage';
 import { CollaboratorsPage } from '@modules/collaborators/pages/CollaboratorsPage';
+import { SettingsPage } from '@modules/settings/pages/SettingsPage';
 import { LoginPage } from '@modules/auth/pages/LoginPage';
 import { authService } from '@modules/auth/services/authService';
 
@@ -39,7 +40,7 @@ export function AppRoutes() {
           <Route path="billings" element={<BillingsPage />} />
           <Route path="connections" element={<div className="p-10 text-app-secondary">Conexões (em desenvolvimento)</div>} />
           <Route path="collaborators" element={<CollaboratorsPage />} />
-          <Route path="settings" element={<div className="p-10 text-app-secondary">Configurações (em desenvolvimento)</div>} />
+          <Route path="settings" element={<SettingsPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

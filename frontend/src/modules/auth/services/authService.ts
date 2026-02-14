@@ -14,6 +14,15 @@ interface LoginResponse {
       tradeName: string | null;
       cnpj: string;
       department: string | null;
+      email: string | null;
+      phone: string | null;
+      address: string | null;
+      addressNumber: string | null;
+      complement: string | null;
+      neighborhood: string | null;
+      city: string | null;
+      state: string | null;
+      zipCode: string | null;
     };
   };
 }
@@ -82,6 +91,15 @@ export const authService = {
     tradeName?: string;
     cnpj: string;
     department?: string;
+    companyEmail?: string;
+    phone?: string;
+    address?: string;
+    addressNumber?: string;
+    complement?: string;
+    neighborhood?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
   }) {
     const response = await api.post('/api/auth/register', data);
     return response.data;

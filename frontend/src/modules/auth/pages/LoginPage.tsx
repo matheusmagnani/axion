@@ -1,9 +1,19 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { Eye, EyeSlash } from '@phosphor-icons/react';
+import { Eye, EyeSlash, CircleNotch } from '@phosphor-icons/react';
 import { authService } from '../services/authService';
 import { useToast } from '@shared/hooks/useToast';
+
+interface ViaCepResponse {
+  cep: string;
+  logradouro: string;
+  complemento: string;
+  bairro: string;
+  localidade: string;
+  uf: string;
+  erro?: boolean;
+}
 
 type View = 'login' | 'register';
 type RegStep = 'user' | 'company';
@@ -50,6 +60,79 @@ export function LoginPage() {
   const [showRegPassword, setShowRegPassword] = useState(false);
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
   const [showRegConfirmPassword, setShowRegConfirmPassword] = useState(false);
+
+  // Company address state
+  const [companyEmail, setCompanyEmail] = useState('');
+  const [companyPhone, setCompanyPhone] = useState('');
+  const [companyZipCode, setCompanyZipCode] = useState('');
+  const [companyAddress, setCompanyAddress] = useState('');
+  const [companyAddressNumber, setCompanyAddressNumber] = useState('');
+  const [companyComplement, setCompanyComplement] = useState('');
+  const [companyNeighborhood, setCompanyNeighborhood] = useState('');
+  const [companyCity, setCompanyCity] = useState('');
+  const [companyState, setCompanyState] = useState('');
+  const [isLoadingCep, setIsLoadingCep] = useState(false);
+
+  // Format functions
+  const formatCNPJ = (value: string) => {
+    const cleaned = value.replace(/\D/g, '').slice(0, 14);
+    return cleaned
+      .replace(/(\d{2})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1/$2')
+      .replace(/(\d{4})(\d{1,2})$/, '$1-$2');
+  };
+
+  const formatPhone = (value: string) => {
+    const cleaned = value.replace(/\D/g, '').slice(0, 11);
+    if (cleaned.length <= 10) {
+      return cleaned
+        .replace(/(\d{2})(\d)/, '($1) $2')
+        .replace(/(\d{4})(\d)/, '$1-$2');
+    }
+    return cleaned
+      .replace(/(\d{2})(\d)/, '($1) $2')
+      .replace(/(\d{5})(\d)/, '$1-$2');
+  };
+
+  const formatZipCode = (value: string) => {
+    const cleaned = value.replace(/\D/g, '').slice(0, 8);
+    return cleaned.replace(/(\d{5})(\d)/, '$1-$2');
+  };
+
+  const fetchAddressByCep = useCallback(async (cep: string) => {
+    const cleanCep = cep.replace(/\D/g, '');
+    if (cleanCep.length !== 8) return;
+
+    setIsLoadingCep(true);
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
+      const data: ViaCepResponse = await response.json();
+
+      if (data.erro) {
+        addToast('CEP não encontrado', 'warning');
+        return;
+      }
+
+      setCompanyAddress(data.logradouro || '');
+      setCompanyNeighborhood(data.bairro || '');
+      setCompanyCity(data.localidade || '');
+      setCompanyState(data.uf || '');
+    } catch {
+      addToast('Erro ao buscar CEP', 'danger');
+    } finally {
+      setIsLoadingCep(false);
+    }
+  }, [addToast]);
+
+  const handleZipCodeChange = (value: string) => {
+    const formatted = formatZipCode(value);
+    setCompanyZipCode(formatted);
+    const cleanCep = value.replace(/\D/g, '');
+    if (cleanCep.length === 8) {
+      fetchAddressByCep(cleanCep);
+    }
+  };
 
   function switchView(to: View) {
     if (transitioning) return;
@@ -99,6 +182,15 @@ export function LoginPage() {
         tradeName: tradeName || undefined,
         cnpj,
         department: department || undefined,
+        companyEmail: companyEmail || undefined,
+        phone: companyPhone || undefined,
+        address: companyAddress || undefined,
+        addressNumber: companyAddressNumber || undefined,
+        complement: companyComplement || undefined,
+        neighborhood: companyNeighborhood || undefined,
+        city: companyCity || undefined,
+        state: companyState || undefined,
+        zipCode: companyZipCode || undefined,
       });
       addToast('Conta criada com sucesso!', 'success');
       setRegName('');
@@ -109,6 +201,15 @@ export function LoginPage() {
       setTradeName('');
       setCnpj('');
       setDepartment('');
+      setCompanyEmail('');
+      setCompanyPhone('');
+      setCompanyZipCode('');
+      setCompanyAddress('');
+      setCompanyAddressNumber('');
+      setCompanyComplement('');
+      setCompanyNeighborhood('');
+      setCompanyCity('');
+      setCompanyState('');
       switchView('login');
     } catch (err) {
       addToast(err instanceof Error ? err.message : 'Erro ao cadastrar', 'danger');
@@ -590,90 +691,243 @@ export function LoginPage() {
 
           {/* Step 2: Company info */}
           {regStep === 'company' && (
-            <form onSubmit={handleRegister} className="space-y-4">
-              <div>
-                <label htmlFor="company-name" className="block text-sm font-medium text-app-secondary mb-2">
-                  Razão Social
-                </label>
-                <input
-                  id="company-name"
-                  type="text"
-                  value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
-                  placeholder="Empresa Ltda"
-                  required
-                  className={inputClass}
-                />
-              </div>
+            <div className="flex flex-col h-full">
+              <form onSubmit={handleRegister} className="space-y-4 max-h-[50vh] overflow-y-auto pr-2">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="company-name" className="block text-sm font-medium text-app-secondary mb-2">
+                      Razão Social
+                    </label>
+                    <input
+                      id="company-name"
+                      type="text"
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
+                      placeholder="Empresa Ltda"
+                      required
+                      className={inputClass}
+                    />
+                  </div>
 
-              <div>
-                <label htmlFor="trade-name" className="block text-sm font-medium text-app-secondary mb-2">
-                  Nome Fantasia
-                </label>
-                <input
-                  id="trade-name"
-                  type="text"
-                  value={tradeName}
-                  onChange={(e) => setTradeName(e.target.value)}
-                  placeholder="Nome Fantasia"
-                  required
-                  className={inputClass}
-                />
-              </div>
+                  <div>
+                    <label htmlFor="trade-name" className="block text-sm font-medium text-app-secondary mb-2">
+                      Nome Fantasia
+                    </label>
+                    <input
+                      id="trade-name"
+                      type="text"
+                      value={tradeName}
+                      onChange={(e) => setTradeName(e.target.value)}
+                      placeholder="Nome Fantasia"
+                      required
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
 
-              <div>
-                <label htmlFor="cnpj" className="block text-sm font-medium text-app-secondary mb-2">
-                  CNPJ
-                </label>
-                <input
-                  id="cnpj"
-                  type="text"
-                  value={cnpj}
-                  onChange={(e) => setCnpj(e.target.value)}
-                  placeholder="00.000.000/0000-00"
-                  required
-                  className={inputClass}
-                />
-              </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="cnpj" className="block text-sm font-medium text-app-secondary mb-2">
+                      CNPJ
+                    </label>
+                    <input
+                      id="cnpj"
+                      type="text"
+                      value={cnpj}
+                      onChange={(e) => setCnpj(formatCNPJ(e.target.value))}
+                      placeholder="00.000.000/0000-00"
+                      required
+                      className={inputClass}
+                    />
+                  </div>
 
-              <div>
-                <label htmlFor="department" className="block text-sm font-medium text-app-secondary mb-2">
-                  Departamento
-                </label>
-                <select
-                  id="department"
-                  value={department}
-                  onChange={(e) => setDepartment(e.target.value)}
-                  required
-                  className={`${inputClass} ${!department ? 'text-app-secondary/40' : ''}`}
-                >
-                  <option value="" disabled>Selecione um departamento</option>
-                  {DEPARTMENTS.map((dep) => (
-                    <option key={dep} value={dep} className="bg-app-bg text-app-secondary">
-                      {dep}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                  <div>
+                    <label htmlFor="department" className="block text-sm font-medium text-app-secondary mb-2">
+                      Departamento
+                    </label>
+                    <select
+                      id="department"
+                      value={department}
+                      onChange={(e) => setDepartment(e.target.value)}
+                      required
+                      className={`${inputClass} ${!department ? 'text-app-secondary/40' : ''}`}
+                    >
+                      <option value="" disabled>Selecione</option>
+                      {DEPARTMENTS.map((dep) => (
+                        <option key={dep} value={dep} className="bg-app-bg text-app-secondary">
+                          {dep}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
 
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setRegStep('user')}
-                  className="flex-1 py-3 border border-app-secondary/40 text-app-secondary font-semibold rounded-lg hover:bg-app-secondary/10 transition-colors"
-                >
-                  Voltar
-                </button>
-                <button
-                  type="submit"
-                  disabled={regLoading}
-                  className="flex-1 py-3 bg-app-secondary text-app-bg font-semibold rounded-lg hover:bg-app-secondary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {regLoading ? 'Cadastrando...' : 'Cadastrar'}
-                </button>
-              </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="company-email" className="block text-sm font-medium text-app-secondary mb-2">
+                      Email da Empresa
+                    </label>
+                    <input
+                      id="company-email"
+                      type="email"
+                      value={companyEmail}
+                      onChange={(e) => setCompanyEmail(e.target.value)}
+                      placeholder="contato@empresa.com"
+                      required
+                      className={inputClass}
+                    />
+                  </div>
 
-              <p className="text-center text-sm text-app-gray mt-4">
+                  <div>
+                    <label htmlFor="company-phone" className="block text-sm font-medium text-app-secondary mb-2">
+                      Telefone
+                    </label>
+                    <input
+                      id="company-phone"
+                      type="text"
+                      value={companyPhone}
+                      onChange={(e) => setCompanyPhone(formatPhone(e.target.value))}
+                      placeholder="(00) 00000-0000"
+                      required
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
+
+                <div className="relative">
+                  <label htmlFor="company-zipcode" className="block text-sm font-medium text-app-secondary mb-2">
+                    CEP
+                  </label>
+                  <input
+                    id="company-zipcode"
+                    type="text"
+                    value={companyZipCode}
+                    onChange={(e) => handleZipCodeChange(e.target.value)}
+                    placeholder="00000-000"
+                    required
+                    disabled={isLoadingCep}
+                    className={inputClass}
+                  />
+                  {isLoadingCep && (
+                    <CircleNotch className="absolute right-3 top-10 w-5 h-5 text-app-secondary animate-spin" weight="bold" />
+                  )}
+                </div>
+
+                <div className="grid grid-cols-4 gap-4">
+                  <div className="col-span-3">
+                    <label htmlFor="company-address" className="block text-sm font-medium text-app-secondary mb-2">
+                      Endereço
+                    </label>
+                    <input
+                      id="company-address"
+                      type="text"
+                      value={companyAddress}
+                      onChange={(e) => setCompanyAddress(e.target.value)}
+                      placeholder="Rua, Avenida..."
+                      required
+                      className={inputClass}
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="company-number" className="block text-sm font-medium text-app-secondary mb-2">
+                      Número
+                    </label>
+                    <input
+                      id="company-number"
+                      type="text"
+                      value={companyAddressNumber}
+                      onChange={(e) => setCompanyAddressNumber(e.target.value)}
+                      placeholder="123"
+                      required
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="company-complement" className="block text-sm font-medium text-app-secondary mb-2">
+                      Complemento
+                    </label>
+                    <input
+                      id="company-complement"
+                      type="text"
+                      value={companyComplement}
+                      onChange={(e) => setCompanyComplement(e.target.value)}
+                      placeholder="Apto, Sala... (opcional)"
+                      className={inputClass}
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="company-neighborhood" className="block text-sm font-medium text-app-secondary mb-2">
+                      Bairro
+                    </label>
+                    <input
+                      id="company-neighborhood"
+                      type="text"
+                      value={companyNeighborhood}
+                      onChange={(e) => setCompanyNeighborhood(e.target.value)}
+                      placeholder="Bairro"
+                      required
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-4 gap-4">
+                  <div className="col-span-3">
+                    <label htmlFor="company-city" className="block text-sm font-medium text-app-secondary mb-2">
+                      Cidade
+                    </label>
+                    <input
+                      id="company-city"
+                      type="text"
+                      value={companyCity}
+                      onChange={(e) => setCompanyCity(e.target.value)}
+                      placeholder="Cidade"
+                      required
+                      className={inputClass}
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="company-state" className="block text-sm font-medium text-app-secondary mb-2">
+                      UF
+                    </label>
+                    <input
+                      id="company-state"
+                      type="text"
+                      value={companyState}
+                      onChange={(e) => setCompanyState(e.target.value.toUpperCase().slice(0, 2))}
+                      placeholder="UF"
+                      required
+                      maxLength={2}
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setRegStep('user')}
+                    className="flex-1 py-3 border border-app-secondary/40 text-app-secondary font-semibold rounded-lg hover:bg-app-secondary/10 transition-colors"
+                  >
+                    Voltar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={regLoading}
+                    className="flex-1 py-3 bg-app-secondary text-app-bg font-semibold rounded-lg hover:bg-app-secondary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {regLoading ? 'Cadastrando...' : 'Cadastrar'}
+                  </button>
+                </div>
+              </form>
+
+              <p className="text-center text-sm text-app-gray mt-4 pt-2">
                 <button
                   type="button"
                   onClick={() => switchView('login')}
@@ -682,7 +936,7 @@ export function LoginPage() {
                   Já tenho uma conta
                 </button>
               </p>
-            </form>
+            </div>
           )}
         </div>
       </div>
