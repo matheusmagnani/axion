@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { ChartPieSlice, UsersThree, CashRegister, Plugs, Users, Gear, AlignLeft, AlignTopSimple } from '@phosphor-icons/react';
 import { Link, useLocation } from 'react-router-dom';
 import logoSvg from '@/assets/logo.svg';
+import { useMyPermissions, PATH_TO_MODULE } from '@shared/hooks/useMyPermissions';
 
 interface MenuItem {
   label: string;
@@ -23,6 +24,15 @@ const COLLAPSE_BREAKPOINT = 1280; // Collapses when width < 1280px
 export function Sidebar() {
   const location = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(window.innerWidth < COLLAPSE_BREAKPOINT);
+  const { permissions, isAdmin } = useMyPermissions();
+
+  const visibleMenuItems = menuItems.filter((item) => {
+    const module = PATH_TO_MODULE[item.path];
+    if (!module) return true; // Dashboard — always visible
+    if (isAdmin) return true;
+    const perm = permissions.find(p => p.module === module && p.action === 'read');
+    return perm?.allowed ?? false;
+  });
 
   // Detect screen size and collapse automatically
   useEffect(() => {
@@ -58,21 +68,21 @@ export function Sidebar() {
         aria-label={isCollapsed ? 'Expandir menu' : 'Recolher menu'}
       >
         <div className="relative w-6 h-6">
-          <AlignLeft 
+          <AlignLeft
             className={`
               absolute inset-0 w-6 h-6 text-app-secondary
               transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
               ${isCollapsed ? 'opacity-100 rotate-0' : 'opacity-0 -rotate-90'}
-            `} 
-            weight="regular" 
+            `}
+            weight="regular"
           />
-          <AlignTopSimple 
+          <AlignTopSimple
             className={`
               absolute inset-0 w-6 h-6 text-app-secondary
               transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
               ${isCollapsed ? 'opacity-0 rotate-90' : 'opacity-100 rotate-0'}
-            `} 
-            weight="regular" 
+            `}
+            weight="regular"
           />
         </div>
       </button>
@@ -91,7 +101,7 @@ export function Sidebar() {
 
       {/* Menu Items */}
       <div className="flex-shrink-0 flex flex-col gap-[10px] items-center">
-        {menuItems.map((item, index) => {
+        {visibleMenuItems.map((item, index) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path;
 

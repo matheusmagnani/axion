@@ -8,12 +8,6 @@ datasource db {
 }
 
 // Enums
-enum AssociateStatus {
-  ACTIVE
-  INACTIVE
-  PENDING
-}
-
 enum ContractStatus {
   ACTIVE
   ENDED
@@ -46,8 +40,10 @@ model Company {
   zipCode     String?  @map("zip_code")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
 
   users      User[]
+  roles      Role[]
   associates Associate[]
   contracts  Contract[]
   billings   Billing[]
@@ -61,9 +57,10 @@ model Associate {
   cpf       String
   email     String
   phone     String
-  status    AssociateStatus  @default(PENDING)
+  status    Int              @default(2)
   createdAt DateTime         @default(now()) @map("created_at")
   updatedAt DateTime         @updatedAt @map("updated_at")
+  deletedAt DateTime?        @map("deleted_at")
 
   companyId Int     @map("company_id")
   company   Company @relation(fields: [companyId], references: [id])
@@ -92,6 +89,7 @@ model Contract {
 
   createdAt   DateTime        @default(now()) @map("created_at")
   updatedAt   DateTime        @updatedAt @map("updated_at")
+  deletedAt   DateTime?       @map("deleted_at")
 
   billings    Billing[]
 
@@ -117,8 +115,42 @@ model Billing {
 
   createdAt   DateTime       @default(now()) @map("created_at")
   updatedAt   DateTime       @updatedAt @map("updated_at")
+  deletedAt   DateTime?      @map("deleted_at")
 
   @@map("billings")
+}
+
+model Role {
+  id        Int        @id @default(autoincrement())
+  name      String
+  status    Int        @default(1)
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+  deletedAt DateTime?  @map("deleted_at")
+
+  companyId Int     @map("company_id")
+  company   Company @relation(fields: [companyId], references: [id])
+
+  users       User[]
+  permissions Permission[]
+
+  @@unique([name, companyId])
+  @@map("roles")
+}
+
+model Permission {
+  id        Int      @id @default(autoincrement())
+  roleId    Int      @map("role_id")
+  module    String
+  action    String
+  allowed   Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  role Role @relation(fields: [roleId], references: [id])
+
+  @@unique([roleId, module, action])
+  @@map("permissions")
 }
 
 model User {
@@ -130,9 +162,13 @@ model User {
   active    Boolean  @default(true)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
 
   companyId Int     @map("company_id")
   company   Company @relation(fields: [companyId], references: [id])
+
+  roleId    Int?    @map("role_id")
+  role      Role?   @relation(fields: [roleId], references: [id])
 
   @@map("users")
 }

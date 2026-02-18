@@ -48,6 +48,7 @@ const initialFormData: FormData = {
 };
 
 export function CompanyInfoSection() {
+  const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [errors, setErrors] = useState<Partial<FormData>>({});
@@ -307,6 +308,7 @@ export function CompanyInfoSection() {
         if (isEditing) {
           handleSave();
         } else {
+          setIsExpanded(true);
           setIsEditing(true);
         }
       }}
@@ -350,6 +352,8 @@ export function CompanyInfoSection() {
         title="Informações da Empresa"
         description="Dados cadastrais da empresa"
         icon={<Buildings className="w-5 h-5" weight="fill" />}
+        isExpanded={isExpanded}
+        onToggle={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center justify-center py-10">
           <div className="w-8 h-8 border-2 border-app-secondary/30 border-t-app-secondary rounded-full animate-spin" />
@@ -363,6 +367,8 @@ export function CompanyInfoSection() {
       title="Informações da Empresa"
       description="Dados cadastrais da empresa"
       icon={<Buildings className="w-5 h-5" weight="fill" />}
+      isExpanded={isExpanded}
+      onToggle={() => setIsExpanded(!isExpanded)}
       actions={
         <div className="flex items-center gap-2">
           <CancelButton />

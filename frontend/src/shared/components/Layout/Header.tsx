@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
-import { Flask, DoorOpen, PencilSimple, CaretUp } from '@phosphor-icons/react';
+import { Flask, DoorOpen, PencilSimple, CaretUp, Key } from '@phosphor-icons/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { authService } from '@modules/auth/services/authService';
 import { useToast } from '@shared/hooks/useToast';
+import { Modal, Input } from '@shared/components/ui';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3333';
 
@@ -19,6 +20,12 @@ export function Header() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [expandedHeight, setExpandedHeight] = useState(0);
   const [user, setUser] = useState(authService.getUser());
+  const [passwordModalOpen, setPasswordModalOpen] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [passwordErrors, setPasswordErrors] = useState<{ currentPassword?: string; newPassword?: string; confirmNewPassword?: string }>({});
+  const [savingPassword, setSavingPassword] = useState(false);
   const { addToast } = useToast();
 
   useEffect(() => {
@@ -117,6 +124,47 @@ export function Header() {
     setAvatarMenuOpen(false);
   }
 
+  function openPasswordModal() {
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmNewPassword('');
+    setPasswordErrors({});
+    setPasswordModalOpen(true);
+  }
+
+  async function handleChangePassword(e: React.FormEvent) {
+    e.preventDefault();
+    const errors: typeof passwordErrors = {};
+
+    if (!currentPassword) {
+      errors.currentPassword = 'Senha atual é obrigatória';
+    }
+    if (!newPassword) {
+      errors.newPassword = 'Nova senha é obrigatória';
+    } else if (newPassword.length < 6) {
+      errors.newPassword = 'Nova senha deve ter no mínimo 6 caracteres';
+    }
+    if (!confirmNewPassword) {
+      errors.confirmNewPassword = 'Confirmação é obrigatória';
+    } else if (newPassword !== confirmNewPassword) {
+      errors.confirmNewPassword = 'As senhas não coincidem';
+    }
+
+    setPasswordErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+
+    setSavingPassword(true);
+    try {
+      await authService.changePassword({ currentPassword, newPassword });
+      setPasswordModalOpen(false);
+      addToast('Senha alterada com sucesso!', 'success');
+    } catch (err: any) {
+      addToast(err?.response?.data?.message || err.message || 'Erro ao alterar senha', 'danger');
+    } finally {
+      setSavingPassword(false);
+    }
+  }
+
   return (
     <div ref={wrapperRef} className="relative z-40">
       <div ref={headerBarRef}>
@@ -191,16 +239,26 @@ export function Header() {
                     className="flex flex-col items-start mt-3"
                   >
                     {editing ? (
-                      <input
-                        value={editEmail}
-                        onChange={(e) => setEditEmail(e.target.value)}
-                        className="bg-transparent border border-app-secondary/30 rounded-lg px-4 py-2 text-app-secondary/70 text-base md:text-lg outline-none focus:border-app-secondary/50 transition-colors"
-                        placeholder="Email"
-                      />
+                      <>
+                        <input
+                          value={editEmail}
+                          onChange={(e) => setEditEmail(e.target.value)}
+                          className="bg-transparent border border-app-secondary/30 rounded-lg px-4 py-2 text-app-secondary/70 text-base md:text-lg outline-none focus:border-app-secondary/50 transition-colors"
+                          placeholder="Email"
+                        />
+                        <p className="mt-2 text-base md:text-lg text-app-secondary/50">
+                          Setor: {user?.role?.name || 'Sem setor'}
+                        </p>
+                      </>
                     ) : (
-                      <p className="text-base md:text-lg text-app-secondary/50">
-                        Email: {user?.email || '—'}
-                      </p>
+                      <>
+                        <p className="text-base md:text-lg text-app-secondary/50">
+                          Email: {user?.email || '—'}
+                        </p>
+                        <p className="text-base md:text-lg text-app-secondary/50">
+                          Setor: {user?.role?.name || 'Sem setor'}
+                        </p>
+                      </>
                     )}
                   </motion.div>
                 )}
@@ -285,10 +343,10 @@ export function Header() {
                   <button
                     onClick={editing ? cancelEditing : startEditing}
                     disabled={saving}
-                    className={`px-8 py-3 font-semibold text-sm rounded-lg cursor-pointer disabled:opacity-50 ${
+                    className={`px-8 py-3 font-semibold text-sm rounded-lg cursor-pointer disabled:opacity-50 border ${
                       editing
-                        ? 'bg-transparent text-app-secondary border border-app-secondary/50 hover:bg-app-secondary/10 min-w-[120px]'
-                        : 'bg-app-secondary text-app-primary hover:brightness-110 border-0'
+                        ? 'bg-transparent text-app-secondary border-app-secondary/50 hover:bg-app-secondary/10 min-w-[120px]'
+                        : 'bg-app-secondary text-app-primary hover:brightness-110 border-transparent'
                     }`}
                   >
                     {editing ? 'Cancelar' : 'Editar dados do usuário'}
@@ -300,6 +358,15 @@ export function Header() {
                       className="px-8 py-3 bg-app-secondary text-app-primary font-semibold text-sm rounded-lg hover:brightness-110 cursor-pointer border-0 disabled:opacity-50 min-w-[120px]"
                     >
                       {saving ? 'Salvando...' : 'Salvar'}
+                    </button>
+                  )}
+                  {!editing && (
+                    <button
+                      onClick={openPasswordModal}
+                      className="flex items-center gap-2 px-8 py-3 font-semibold text-sm rounded-lg cursor-pointer bg-transparent text-app-secondary border border-app-secondary/50 hover:bg-app-secondary/10"
+                    >
+                      <Key className="w-4 h-4" weight="regular" />
+                      Alterar senha
                     </button>
                   )}
                 </div>
@@ -380,6 +447,67 @@ export function Header() {
           )}
         </AnimatePresence>
       </div>
+
+      <Modal
+        isOpen={passwordModalOpen}
+        onClose={() => setPasswordModalOpen(false)}
+        title="Alterar Senha"
+      >
+        <form onSubmit={handleChangePassword} className="flex flex-col gap-5 min-w-[400px]">
+          <Input
+            label="Senha atual"
+            type="password"
+            placeholder="Digite sua senha atual"
+            value={currentPassword}
+            onChange={(e) => {
+              setCurrentPassword(e.target.value);
+              if (passwordErrors.currentPassword) setPasswordErrors(prev => ({ ...prev, currentPassword: undefined }));
+            }}
+            error={passwordErrors.currentPassword}
+            icon={<Key className="w-5 h-5" weight="regular" />}
+          />
+          <Input
+            label="Nova senha"
+            type="password"
+            placeholder="Mínimo 6 caracteres"
+            value={newPassword}
+            onChange={(e) => {
+              setNewPassword(e.target.value);
+              if (passwordErrors.newPassword) setPasswordErrors(prev => ({ ...prev, newPassword: undefined }));
+            }}
+            error={passwordErrors.newPassword}
+            icon={<Key className="w-5 h-5" weight="regular" />}
+          />
+          <Input
+            label="Confirmar nova senha"
+            type="password"
+            placeholder="Repita a nova senha"
+            value={confirmNewPassword}
+            onChange={(e) => {
+              setConfirmNewPassword(e.target.value);
+              if (passwordErrors.confirmNewPassword) setPasswordErrors(prev => ({ ...prev, confirmNewPassword: undefined }));
+            }}
+            error={passwordErrors.confirmNewPassword}
+            icon={<Key className="w-5 h-5" weight="regular" />}
+          />
+          <div className="flex items-center justify-end gap-3 mt-4">
+            <button
+              type="button"
+              onClick={() => setPasswordModalOpen(false)}
+              className="px-6 py-2.5 text-app-secondary/70 hover:text-app-secondary transition-colors rounded-[10px] hover:bg-app-secondary/10"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={savingPassword}
+              className="px-6 py-2.5 bg-app-secondary text-app-primary font-medium rounded-[10px] hover:bg-app-secondary/90 transition-colors disabled:opacity-50"
+            >
+              {savingPassword ? 'Alterando...' : 'Alterar'}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

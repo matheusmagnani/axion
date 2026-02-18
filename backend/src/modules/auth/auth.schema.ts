@@ -43,6 +43,14 @@ export type RegisterInput = z.infer<typeof registerSchema>;
 export const updateProfileSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório').optional(),
   email: z.string().email('Email inválido').optional(),
+  roleId: z.number().int().positive().nullable().optional(),
 });
 
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Senha atual é obrigatória'),
+  newPassword: z.string().min(6, 'Nova senha deve ter no mínimo 6 caracteres'),
+});
+
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;

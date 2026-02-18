@@ -1,6 +1,8 @@
 import { Gear } from '@phosphor-icons/react';
 import { PageHeader } from '@shared/components/PageHeader/PageHeader';
 import { CompanyInfoSection } from '../components/CompanyInfoSection';
+import { RolesSection } from '../components/RolesSection';
+import { PermissionsSection } from '../components/PermissionsSection';
 
 export function SettingsPage() {
   return (
@@ -19,12 +21,11 @@ export function SettingsPage() {
           {/* Módulo: Informações da Empresa */}
           <CompanyInfoSection />
 
-          {/* Placeholder para futuros módulos */}
-          <div className="bg-app-primary/50 rounded-2xl border border-dashed border-app-secondary/20 p-8 text-center">
-            <p className="text-app-gray">
-              Mais configurações em breve: Produtos, Permissões, Setores...
-            </p>
-          </div>
+          {/* Módulo: Cargos */}
+          <RolesSection />
+
+          {/* Módulo: Permissões */}
+          <PermissionsSection />
         </div>
       </div>
     </div>

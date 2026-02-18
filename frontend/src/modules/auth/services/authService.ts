@@ -8,6 +8,8 @@ interface LoginResponse {
     email: string;
     avatar: string | null;
     companyId: number;
+    roleId: number | null;
+    role: { id: number; name: string } | null;
     company: {
       id: number;
       companyName: string;
@@ -73,7 +75,7 @@ export const authService = {
     }
   },
 
-  async updateProfile(data: { name?: string; email?: string }): Promise<LoginResponse['user']> {
+  async updateProfile(data: { name?: string; email?: string; roleId?: number | null }): Promise<LoginResponse['user']> {
     const response = await api.patch<{ user: LoginResponse['user'] }>('/api/auth/profile', data);
     const user = this.getUser();
     if (user) {
@@ -81,6 +83,10 @@ export const authService = {
       localStorage.setItem('user', JSON.stringify(updated));
     }
     return response.data.user;
+  },
+
+  async changePassword(data: { currentPassword: string; newPassword: string }): Promise<void> {
+    await api.patch('/api/auth/change-password', data);
   },
 
   async register(data: {

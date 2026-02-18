@@ -4,8 +4,8 @@ import type { UpdateCompanyInput } from './settings.schema.js';
 
 export class SettingsService {
   async getCompanyInfo(companyId: number) {
-    const company = await prisma.company.findUnique({
-      where: { id: companyId },
+    const company = await prisma.company.findFirst({
+      where: { id: companyId, deletedAt: null },
     });
 
     if (!company) {
@@ -31,8 +31,8 @@ export class SettingsService {
   }
 
   async updateCompanyInfo(companyId: number, data: UpdateCompanyInput) {
-    const company = await prisma.company.findUnique({
-      where: { id: companyId },
+    const company = await prisma.company.findFirst({
+      where: { id: companyId, deletedAt: null },
     });
 
     if (!company) {

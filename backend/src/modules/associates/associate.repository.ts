@@ -1,6 +1,5 @@
 import { prisma } from '../../infra/database/prisma/client.js';
 import type { CreateAssociateInput, UpdateAssociateInput, ListAssociatesQuery } from './associate.schema.js';
-import type { Associate, AssociateStatus } from '@prisma/client';
 
 export class AssociateRepository {
   async findAll(query: ListAssociatesQuery, companyId: number) {
@@ -9,6 +8,7 @@ export class AssociateRepository {
 
     const where = {
       companyId,
+      deletedAt: null,
       ...(search && {
         OR: [
           { name: { contains: search, mode: 'insensitive' as const } },
@@ -16,7 +16,7 @@ export class AssociateRepository {
           { cpf: { contains: search } },
         ],
       }),
-      ...(status && { status: status as AssociateStatus }),
+      ...(status !== undefined && { status }),
     };
 
     const [associates, total] = await Promise.all([
@@ -40,9 +40,9 @@ export class AssociateRepository {
     };
   }
 
-  async findById(id: number, companyId: number): Promise<Associate | null> {
+  async findById(id: number, companyId: number) {
     return prisma.associate.findFirst({
-      where: { id, companyId },
+      where: { id, companyId, deletedAt: null },
       include: {
         contracts: true,
         billings: true,
@@ -50,32 +50,32 @@ export class AssociateRepository {
     });
   }
 
-  async findByCpf(cpf: string, companyId: number): Promise<Associate | null> {
+  async findByCpf(cpf: string, companyId: number) {
     return prisma.associate.findFirst({
-      where: { cpf, companyId },
+      where: { cpf, companyId, deletedAt: null },
     });
   }
 
-  async findByEmail(email: string, companyId: number): Promise<Associate | null> {
+  async findByEmail(email: string, companyId: number) {
     return prisma.associate.findFirst({
-      where: { email, companyId },
+      where: { email, companyId, deletedAt: null },
     });
   }
 
-  async create(data: CreateAssociateInput, companyId: number): Promise<Associate> {
+  async create(data: CreateAssociateInput, companyId: number) {
     return prisma.associate.create({
       data: {
         name: data.name,
         cpf: data.cpf,
         email: data.email,
         phone: data.phone,
-        status: data.status as AssociateStatus,
+        status: data.status,
         companyId,
       },
     });
   }
 
-  async update(id: number, data: UpdateAssociateInput, companyId: number): Promise<Associate> {
+  async update(id: number, data: UpdateAssociateInput, companyId: number) {
     return prisma.associate.update({
       where: { id },
       data: {
@@ -83,14 +83,35 @@ export class AssociateRepository {
         ...(data.cpf && { cpf: data.cpf }),
         ...(data.email && { email: data.email }),
         ...(data.phone && { phone: data.phone }),
-        ...(data.status && { status: data.status as AssociateStatus }),
+        ...(data.status !== undefined && { status: data.status }),
+      },
+    });
+  }
+
+  async findByCpfIncludeDeleted(cpf: string, companyId: number) {
+    return prisma.associate.findFirst({
+      where: { cpf, companyId, deletedAt: { not: null } },
+    });
+  }
+
+  async restore(id: number, data: CreateAssociateInput) {
+    return prisma.associate.update({
+      where: { id },
+      data: {
+        name: data.name,
+        cpf: data.cpf,
+        email: data.email,
+        phone: data.phone,
+        status: data.status ?? 2,
+        deletedAt: null,
       },
     });
   }
 
   async delete(id: number, companyId: number): Promise<void> {
-    await prisma.associate.deleteMany({
+    await prisma.associate.updateMany({
       where: { id, companyId },
+      data: { deletedAt: new Date(), status: 0 },
     });
   }
 }

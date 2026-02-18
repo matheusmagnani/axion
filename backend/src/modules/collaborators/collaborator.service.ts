@@ -19,7 +19,14 @@ export class CollaboratorService {
     if (existing) {
       throw new ConflictError('Já existe um usuário com este email');
     }
+
     const hashedPassword = await bcrypt.hash(data.password, 10);
+
+    const deleted = await this.repository.findByEmailIncludeDeleted(data.email);
+    if (deleted) {
+      return this.repository.restore(deleted.id, { ...data, password: hashedPassword }, companyId);
+    }
+
     return this.repository.create({ ...data, password: hashedPassword }, companyId);
   }
 
@@ -52,5 +59,14 @@ export class CollaboratorService {
       throw new NotFoundError('Colaborador');
     }
     return this.repository.toggleActive(id, !user.active);
+  }
+
+  async delete(id: number, companyId: number) {
+    const user = await this.repository.findById(id, companyId);
+    if (!user) {
+      throw new NotFoundError('Colaborador');
+    }
+    await this.repository.softDelete(id);
+    return { message: 'Colaborador excluído com sucesso' };
   }
 }

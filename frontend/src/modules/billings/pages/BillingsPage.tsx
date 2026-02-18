@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { CurrencyCircleDollar } from '@phosphor-icons/react';
 import { PageHeader, type FilterConfig } from '@shared/components/PageHeader';
+import { useCanAccess } from '@shared/hooks/useMyPermissions';
 
 const filters: FilterConfig[] = [
   {
@@ -26,6 +27,7 @@ const filters: FilterConfig[] = [
 
 export function BillingsPage() {
   const [searchTerm, setSearchTerm] = useState('');
+  const canCreate = useCanAccess('billings', 'create');
 
   const handleFilterChange = (key: string, value: string) => {
     console.log('Filter changed:', key, value);
@@ -43,7 +45,7 @@ export function BillingsPage() {
         onSearch={setSearchTerm}
         filters={filters}
         onFilterChange={handleFilterChange}
-        onAdd={handleAdd}
+        onAdd={canCreate ? handleAdd : undefined}
         addLabel="Nova Cobrança"
       />
       

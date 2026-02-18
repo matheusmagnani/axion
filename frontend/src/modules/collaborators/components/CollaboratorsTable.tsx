@@ -1,20 +1,26 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { List, CaretLeft, CaretRight, ToggleLeft, ToggleRight, Key } from '@phosphor-icons/react';
-import { useCollaborators, useToggleCollaboratorActive, useChangeCollaboratorPassword } from '../hooks/useCollaborators';
+import { List, CaretLeft, CaretRight, ToggleLeft, ToggleRight, Key, PencilSimple, Trash } from '@phosphor-icons/react';
+import { useCollaborators, useToggleCollaboratorActive, useChangeCollaboratorPassword, useUpdateCollaborator, useDeleteCollaborator } from '../hooks/useCollaborators';
 import { Checkbox } from '@shared/components/ui/Checkbox';
 import { Modal } from '@shared/components/ui';
 import { ListCard } from '@shared/components/ListCard';
 import { ChangePasswordForm } from './ChangePasswordForm';
+import { CollaboratorForm, type CollaboratorFormData } from './CollaboratorForm';
 import { useToast } from '@shared/hooks/useToast';
 import { authService } from '@modules/auth/services/authService';
+import { useRoles } from '@modules/settings/hooks/useRoles';
+import { useQueryClient } from '@tanstack/react-query';
+import type { Collaborator } from '../services/collaboratorsService';
 
 interface CollaboratorsTableProps {
   searchTerm?: string;
   activeFilter?: string;
+  canEdit?: boolean;
+  canDelete?: boolean;
 }
 
-export function CollaboratorsTable({ searchTerm = '', activeFilter = '' }: CollaboratorsTableProps) {
+export function CollaboratorsTable({ searchTerm = '', activeFilter = '', canEdit = true, canDelete = true }: CollaboratorsTableProps) {
   const [page, setPage] = useState(1);
   const limit = 10;
 
@@ -34,9 +40,18 @@ export function CollaboratorsTable({ searchTerm = '', activeFilter = '' }: Colla
   const [menuPos, setMenuPos] = useState<{ top: number; right: number }>({ top: 0, right: 0 });
   const menuRef = useRef<HTMLDivElement>(null);
   const [passwordModalId, setPasswordModalId] = useState<number | null>(null);
+  const [editingCollaborator, setEditingCollaborator] = useState<Collaborator | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
   const toggleActive = useToggleCollaboratorActive();
   const changePassword = useChangeCollaboratorPassword();
+  const updateCollaborator = useUpdateCollaborator();
+  const deleteCollaborator = useDeleteCollaborator();
   const { addToast } = useToast();
+  const queryClient = useQueryClient();
+  const { data: rolesData } = useRoles();
+  const activeRoles = (rolesData?.data ?? [])
+    .filter(r => r.status === 1)
+    .map(r => ({ id: r.id, name: r.name }));
 
   const handleOpenMenu = (id: number, buttonEl: HTMLButtonElement) => {
     if (openMenuId === id) {
@@ -48,12 +63,14 @@ export function CollaboratorsTable({ searchTerm = '', activeFilter = '' }: Colla
     const cardRect = cardEl ? cardEl.getBoundingClientRect() : rect;
     setMenuPos({ top: cardRect.bottom, right: window.innerWidth - cardRect.right });
     setOpenMenuId(id);
+    setDeleteConfirmId(null);
   };
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setOpenMenuId(null);
+        setDeleteConfirmId(null);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -115,7 +132,7 @@ export function CollaboratorsTable({ searchTerm = '', activeFilter = '' }: Colla
       )}
 
       {/* Header */}
-      <div className="flex-shrink-0 grid grid-cols-[50px_1fr_1fr_120px_60px] items-center bg-app-primary py-3 px-4 rounded-[5px]">
+      <div className="flex-shrink-0 grid grid-cols-[50px_1fr_1fr_1fr_120px_60px] items-center bg-app-primary py-3 px-4 rounded-[5px]">
         <div className="flex items-center justify-center">
           <Checkbox
             checked={collaborators.length > 0 && selectedIds.size === collaborators.length}
@@ -124,6 +141,7 @@ export function CollaboratorsTable({ searchTerm = '', activeFilter = '' }: Colla
         </div>
         <div className="text-app-secondary text-lg font-normal text-center">Nome</div>
         <div className="text-app-secondary text-lg font-normal text-center">Email</div>
+        <div className="text-app-secondary text-lg font-normal text-center">Setor</div>
         <div className="text-app-secondary text-lg font-normal text-center">Status</div>
         <div className="text-app-secondary text-lg font-normal text-center">Ação</div>
       </div>
@@ -142,7 +160,7 @@ export function CollaboratorsTable({ searchTerm = '', activeFilter = '' }: Colla
                 key={collaborator.id}
                 isSelected={isSelected}
                 onSelect={() => toggleSelect(collaborator.id)}
-                columns="grid-cols-[50px_1fr_1fr_120px_60px]"
+                columns="grid-cols-[50px_1fr_1fr_1fr_120px_60px]"
               >
                 <div className="flex flex-col items-center gap-1">
                   <div className="flex items-center gap-2">
@@ -164,6 +182,12 @@ export function CollaboratorsTable({ searchTerm = '', activeFilter = '' }: Colla
                 </div>
 
                 <div className="flex justify-center">
+                  <span className="text-app-secondary/80 text-base">
+                    {collaborator.role?.name ?? 'Sem setor'}
+                  </span>
+                </div>
+
+                <div className="flex justify-center">
                   <span
                     className={`px-3 py-1 rounded-full text-xs font-medium ${
                       collaborator.active
@@ -176,60 +200,118 @@ export function CollaboratorsTable({ searchTerm = '', activeFilter = '' }: Colla
                 </div>
 
                 <div className="flex justify-center">
-                  <button
-                    onClick={(e) => handleOpenMenu(collaborator.id, e.currentTarget)}
-                    className="p-2 hover:bg-black/10 rounded transition-colors"
-                  >
-                    <List className="w-6 h-6 text-app-secondary" weight="bold" />
-                  </button>
-                  {openMenuId === collaborator.id && createPortal(
-                    <div
-                      ref={menuRef}
-                      className="fixed z-50 bg-app-primary border border-app-secondary/20 rounded-lg shadow-lg w-[160px]"
-                      style={{ top: menuPos.top, right: menuPos.right, transform: 'translateY(-15px)' }}
-                    >
+                  {(canEdit || canDelete) && (
+                    <>
                       <button
-                        onClick={() => {
-                          toggleActive.mutate(collaborator.id, {
-                            onSuccess: (data) => {
-                              addToast(
-                                data.active ? 'Colaborador ativado!' : 'Colaborador inativado!',
-                                'success'
-                              );
-                              setOpenMenuId(null);
-                            },
-                            onError: (error) => {
-                              addToast(error.message, 'danger');
-                              setOpenMenuId(null);
-                            },
-                          });
-                        }}
-                        className="flex items-center w-full pl-3 pr-4 py-1.5 text-sm hover:bg-app-secondary/10 rounded-lg transition-colors"
+                        onClick={(e) => handleOpenMenu(collaborator.id, e.currentTarget)}
+                        className="p-2 hover:bg-black/10 rounded transition-colors"
                       >
-                        {collaborator.active ? (
-                          <>
-                            <ToggleLeft className="w-6 h-6 text-red-400 shrink-0" weight="light" />
-                            <span className="text-red-400 flex-1 text-center">Inativar</span>
-                          </>
-                        ) : (
-                          <>
-                            <ToggleRight className="w-6 h-6 text-emerald-400 shrink-0" weight="fill" />
-                            <span className="text-emerald-400 flex-1 text-center">Ativar</span>
-                          </>
-                        )}
+                        <List className="w-6 h-6 text-app-secondary" weight="bold" />
                       </button>
-                      <button
-                        onClick={() => {
-                          setPasswordModalId(collaborator.id);
-                          setOpenMenuId(null);
-                        }}
-                        className="flex items-center w-full pl-3 pr-4 py-1.5 text-sm hover:bg-app-secondary/10 rounded-lg transition-colors"
-                      >
-                        <Key className="w-6 h-6 text-app-secondary shrink-0" weight="regular" />
-                        <span className="text-app-secondary flex-1 text-center">Alterar senha</span>
-                      </button>
-                    </div>,
-                    document.body
+                      {openMenuId === collaborator.id && createPortal(
+                        <div
+                          ref={menuRef}
+                          className="fixed z-50 bg-app-primary border border-app-secondary/20 rounded-lg shadow-lg w-[160px]"
+                          style={{ top: menuPos.top, right: menuPos.right, transform: 'translateY(-15px)' }}
+                        >
+                          {canEdit && (
+                            <button
+                              onClick={() => {
+                                setEditingCollaborator(collaborator);
+                                setOpenMenuId(null);
+                              }}
+                              className="flex items-center w-full pl-3 pr-4 py-1.5 text-sm hover:bg-app-secondary/10 rounded-lg transition-colors"
+                            >
+                              <PencilSimple className="w-6 h-6 text-app-secondary shrink-0" weight="regular" />
+                              <span className="text-app-secondary flex-1 text-center">Editar</span>
+                            </button>
+                          )}
+                          {canEdit && (
+                            <button
+                              onClick={() => {
+                                toggleActive.mutate(collaborator.id, {
+                                  onSuccess: (data) => {
+                                    addToast(
+                                      data.active ? 'Colaborador ativado!' : 'Colaborador inativado!',
+                                      'success'
+                                    );
+                                    setOpenMenuId(null);
+                                  },
+                                  onError: (error) => {
+                                    addToast(error.message, 'danger');
+                                    setOpenMenuId(null);
+                                  },
+                                });
+                              }}
+                              className="flex items-center w-full pl-3 pr-4 py-1.5 text-sm hover:bg-app-secondary/10 rounded-lg transition-colors"
+                            >
+                              {collaborator.active ? (
+                                <>
+                                  <ToggleLeft className="w-6 h-6 text-app-secondary shrink-0" weight="light" />
+                                  <span className="text-app-secondary flex-1 text-center">Inativar</span>
+                                </>
+                              ) : (
+                                <>
+                                  <ToggleRight className="w-6 h-6 text-emerald-400 shrink-0" weight="fill" />
+                                  <span className="text-emerald-400 flex-1 text-center">Ativar</span>
+                                </>
+                              )}
+                            </button>
+                          )}
+                          {canEdit && (
+                            <button
+                              onClick={() => {
+                                setPasswordModalId(collaborator.id);
+                                setOpenMenuId(null);
+                              }}
+                              className="flex items-center w-full pl-3 pr-4 py-1.5 text-sm hover:bg-app-secondary/10 rounded-lg transition-colors"
+                            >
+                              <Key className="w-6 h-6 text-app-secondary shrink-0" weight="regular" />
+                              <span className="text-app-secondary flex-1 text-center">Alterar senha</span>
+                            </button>
+                          )}
+                          {canDelete && (
+                            deleteConfirmId === collaborator.id ? (
+                              <div className="flex items-center gap-1 px-2 py-1.5">
+                                <button
+                                  onClick={() => {
+                                    deleteCollaborator.mutate(collaborator.id, {
+                                      onSuccess: () => {
+                                        addToast('Colaborador excluído com sucesso!', 'success');
+                                        setOpenMenuId(null);
+                                        setDeleteConfirmId(null);
+                                      },
+                                      onError: (error) => {
+                                        addToast(error.message, 'danger');
+                                        setDeleteConfirmId(null);
+                                      },
+                                    });
+                                  }}
+                                  className="flex-1 px-2 py-1 text-xs font-medium bg-red-500/20 text-red-400 rounded hover:bg-red-500/30 transition-colors"
+                                >
+                                  Confirmar
+                                </button>
+                                <button
+                                  onClick={() => setDeleteConfirmId(null)}
+                                  className="flex-1 px-2 py-1 text-xs font-medium text-app-secondary/70 rounded hover:bg-app-secondary/10 transition-colors"
+                                >
+                                  Cancelar
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => setDeleteConfirmId(collaborator.id)}
+                                className="flex items-center w-full pl-3 pr-4 py-1.5 text-sm hover:bg-app-secondary/10 rounded-lg transition-colors"
+                              >
+                                <Trash className="w-6 h-6 text-red-400 shrink-0" weight="regular" />
+                                <span className="text-red-400 flex-1 text-center">Excluir</span>
+                              </button>
+                            )
+                          )}
+                        </div>,
+                        document.body
+                      )}
+                    </>
                   )}
                 </div>
               </ListCard>
@@ -278,6 +360,48 @@ export function CollaboratorsTable({ searchTerm = '', activeFilter = '' }: Colla
           }}
           onCancel={() => setPasswordModalId(null)}
         />
+      </Modal>
+
+      <Modal
+        isOpen={editingCollaborator !== null}
+        onClose={() => setEditingCollaborator(null)}
+        title="Editar Colaborador"
+      >
+        {editingCollaborator && (
+          <CollaboratorForm
+            initialData={{
+              name: editingCollaborator.name,
+              email: editingCollaborator.email,
+              roleId: editingCollaborator.roleId,
+            }}
+            roles={activeRoles}
+            onSubmit={(data: CollaboratorFormData) => {
+              updateCollaborator.mutate({
+                id: editingCollaborator.id,
+                data: {
+                  name: data.name,
+                  email: data.email,
+                  roleId: data.roleId,
+                },
+              }, {
+                onSuccess: (updated) => {
+                  const currentUser = authService.getUser();
+                  if (currentUser && currentUser.id === editingCollaborator.id) {
+                    const newUser = { ...currentUser, roleId: updated.roleId, role: updated.role };
+                    localStorage.setItem('user', JSON.stringify(newUser));
+                    queryClient.invalidateQueries({ queryKey: ['my-permissions'] });
+                  }
+                  setEditingCollaborator(null);
+                  addToast('Colaborador atualizado com sucesso!', 'success');
+                },
+                onError: (error) => {
+                  addToast(error.message, 'danger');
+                },
+              });
+            }}
+            onCancel={() => setEditingCollaborator(null)}
+          />
+        )}
       </Modal>
 
     </div>

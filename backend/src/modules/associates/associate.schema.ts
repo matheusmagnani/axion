@@ -12,7 +12,7 @@ export const createAssociateSchema = z.object({
     .string()
     .transform((val) => val.replace(/\D/g, ''))
     .refine((val) => val.length >= 10 && val.length <= 11, 'Telefone inválido'),
-  status: z.enum(['ACTIVE', 'INACTIVE', 'PENDING']).optional().default('PENDING'),
+  status: z.coerce.number().int().min(0).max(2).optional().default(2),
 });
 
 // Schema for updating associate
@@ -29,7 +29,7 @@ export const updateAssociateSchema = z.object({
     .transform((val) => val.replace(/\D/g, ''))
     .refine((val) => val.length >= 10 && val.length <= 11, 'Telefone inválido')
     .optional(),
-  status: z.enum(['ACTIVE', 'INACTIVE', 'PENDING']).optional(),
+  status: z.coerce.number().int().min(0).max(2).optional(),
 });
 
 // Schema for list query params
@@ -37,7 +37,7 @@ export const listAssociatesQuerySchema = z.object({
   page: z.coerce.number().min(1).optional().default(1),
   limit: z.coerce.number().min(1).max(100).optional().default(20),
   search: z.string().optional(),
-  status: z.enum(['ACTIVE', 'INACTIVE', 'PENDING']).optional(),
+  status: z.coerce.number().int().min(0).max(2).optional(),
   orderBy: z.enum(['name', 'createdAt', 'status']).optional().default('createdAt'),
   order: z.enum(['asc', 'desc']).optional().default('desc'),
 });

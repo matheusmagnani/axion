@@ -1,5 +1,4 @@
 import { ReactNode } from 'react';
-import { CaretRight } from '@phosphor-icons/react';
 import { MagicBentoCard } from '@shared/components/ui';
 
 interface SettingsSectionProps {
@@ -42,12 +41,6 @@ export function SettingsSection({
         </div>
         <div className="flex items-center gap-3">
           {actions}
-          {onToggle && (
-            <CaretRight
-              className={`w-5 h-5 text-app-secondary/50 transition-transform duration-300 ${isExpanded ? 'rotate-90' : ''}`}
-              weight="bold"
-            />
-          )}
         </div>
       </div>
 

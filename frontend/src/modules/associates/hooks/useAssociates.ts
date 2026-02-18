@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { associatesService, type Associate, type CreateAssociateDTO, type UpdateAssociateDTO, type ListAssociatesParams, type PaginatedResponse } from '../services/associatesService';
+import { associatesService, type Associate, type AssociateDetail, type CreateAssociateDTO, type UpdateAssociateDTO, type ListAssociatesParams, type PaginatedResponse } from '../services/associatesService';
 
 export function useAssociates(params?: ListAssociatesParams) {
   return useQuery<PaginatedResponse<Associate>>({
@@ -9,7 +9,7 @@ export function useAssociates(params?: ListAssociatesParams) {
 }
 
 export function useAssociate(id: number) {
-  return useQuery<Associate | null>({
+  return useQuery<AssociateDetail>({
     queryKey: ['associates', id],
     queryFn: () => associatesService.getById(id),
     enabled: !!id,
