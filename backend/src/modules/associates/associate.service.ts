@@ -29,6 +29,11 @@ export class AssociateService {
       throw new ConflictError('Já existe um associado com este CPF');
     }
 
+    const deleted = await this.repository.findByCpfIncludeDeleted(data.cpf, companyId);
+    if (deleted) {
+      return this.repository.restore(deleted.id, data);
+    }
+
     return this.repository.create(data, companyId);
   }
 

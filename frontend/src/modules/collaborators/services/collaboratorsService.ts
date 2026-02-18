@@ -5,6 +5,8 @@ export interface Collaborator {
   name: string;
   email: string;
   active: boolean;
+  roleId: number | null;
+  role: { id: number; name: string } | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -13,11 +15,13 @@ export interface CreateCollaboratorDTO {
   name: string;
   email: string;
   password: string;
+  roleId?: number;
 }
 
 export interface UpdateCollaboratorDTO {
   name?: string;
   email?: string;
+  roleId?: number | null;
 }
 
 export interface ListCollaboratorsParams {
@@ -63,5 +67,9 @@ export const collaboratorsService = {
   async toggleActive(id: number): Promise<Collaborator> {
     const response = await api.patch<Collaborator>(`/api/collaborators/${id}/toggle-active`);
     return response.data;
+  },
+
+  async delete(id: number): Promise<void> {
+    await api.delete(`/api/collaborators/${id}`);
   },
 };

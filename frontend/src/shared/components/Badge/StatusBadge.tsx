@@ -1,36 +1,24 @@
 interface StatusBadgeProps {
-  status: 'active' | 'inactive' | 'pending' | 'ACTIVE' | 'INACTIVE' | 'PENDING';
+  status: number;
 }
 
-const statusConfig = {
-  active: {
-    label: 'Ativo',
-    className: 'bg-green-500/20 text-green-400 border-green-500/50',
-  },
-  inactive: {
+const statusConfig: Record<number, { label: string; className: string }> = {
+  0: {
     label: 'Inativo',
     className: 'bg-red-500/20 text-red-400 border-red-500/50',
   },
-  pending: {
-    label: 'Pendente',
-    className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50',
-  },
-  ACTIVE: {
+  1: {
     label: 'Ativo',
     className: 'bg-green-500/20 text-green-400 border-green-500/50',
   },
-  INACTIVE: {
-    label: 'Inativo',
-    className: 'bg-red-500/20 text-red-400 border-red-500/50',
-  },
-  PENDING: {
+  2: {
     label: 'Pendente',
     className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50',
   },
 };
 
 export function StatusBadge({ status }: StatusBadgeProps) {
-  const config = statusConfig[status];
+  const config = statusConfig[status] ?? statusConfig[0];
 
   return (
     <span className={`

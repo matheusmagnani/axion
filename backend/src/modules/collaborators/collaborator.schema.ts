@@ -13,11 +13,13 @@ export const createCollaboratorSchema = z.object({
   name: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres'),
   email: z.string().email('Email inválido'),
   password: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres'),
+  roleId: z.number().int().positive().optional(),
 });
 
 export const updateCollaboratorSchema = z.object({
   name: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres').optional(),
   email: z.string().email('Email inválido').optional(),
+  roleId: z.number().int().positive().nullable().optional(),
 });
 
 export const changePasswordSchema = z.object({

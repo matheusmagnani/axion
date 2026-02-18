@@ -6,6 +6,8 @@ import { CollaboratorForm, type CollaboratorFormData } from '../components/Colla
 import { useCreateCollaborator } from '../hooks/useCollaborators';
 import { Modal } from '@shared/components/ui';
 import { useToast } from '@shared/hooks/useToast';
+import { useRoles } from '@modules/settings/hooks/useRoles';
+import { useCanAccess } from '@shared/hooks/useMyPermissions';
 
 const filters: FilterConfig[] = [
   {
@@ -24,6 +26,14 @@ export function CollaboratorsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const createCollaborator = useCreateCollaborator();
   const { addToast } = useToast();
+  const { data: rolesData } = useRoles();
+  const canCreate = useCanAccess('collaborators', 'create');
+  const canEdit = useCanAccess('collaborators', 'edit');
+  const canDelete = useCanAccess('collaborators', 'delete');
+
+  const activeRoles = (rolesData?.data ?? [])
+    .filter(r => r.status === 1)
+    .map(r => ({ id: r.id, name: r.name }));
 
   const handleFilterChange = (key: string, value: string) => {
     if (key === 'active') {
@@ -40,7 +50,7 @@ export function CollaboratorsPage() {
           onSearch={setSearchTerm}
           filters={filters}
           onFilterChange={handleFilterChange}
-          onAdd={() => setIsModalOpen(true)}
+          onAdd={canCreate ? () => setIsModalOpen(true) : undefined}
           addLabel="Novo Colaborador"
         />
       </div>
@@ -49,6 +59,8 @@ export function CollaboratorsPage() {
         <CollaboratorsTable
           searchTerm={searchTerm}
           activeFilter={activeFilter}
+          canEdit={canEdit}
+          canDelete={canDelete}
         />
       </div>
 
@@ -58,6 +70,7 @@ export function CollaboratorsPage() {
         title="Novo Colaborador"
       >
         <CollaboratorForm
+          roles={activeRoles}
           onSubmit={(data: CollaboratorFormData) => {
             createCollaborator.mutate(data, {
               onSuccess: () => {

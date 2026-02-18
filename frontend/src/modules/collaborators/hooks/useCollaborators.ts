@@ -48,3 +48,14 @@ export function useToggleCollaboratorActive() {
     },
   });
 }
+
+export function useDeleteCollaborator() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) => collaboratorsService.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['collaborators'] });
+    },
+  });
+}

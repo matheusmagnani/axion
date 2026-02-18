@@ -12,9 +12,9 @@ const filters: FilterConfig[] = [
     key: 'status',
     label: 'Status',
     options: [
-      { value: 'ACTIVE', label: 'Ativo' },
-      { value: 'INACTIVE', label: 'Inativo' },
-      { value: 'PENDING', label: 'Pendente' },
+      { value: '1', label: 'Ativo' },
+      { value: '0', label: 'Inativo' },
+      { value: '2', label: 'Pendente' },
     ],
   },
 ];

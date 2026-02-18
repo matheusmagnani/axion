@@ -41,4 +41,11 @@ export class CollaboratorController {
     const result = await service.toggleActive(id, companyId);
     return reply.send(result);
   }
+
+  async delete(request: FastifyRequest, reply: FastifyReply) {
+    const { id } = idParamSchema.parse(request.params);
+    const { companyId } = request.user;
+    const result = await service.delete(id, companyId);
+    return reply.send(result);
+  }
 }

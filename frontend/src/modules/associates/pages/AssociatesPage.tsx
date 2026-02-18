@@ -5,6 +5,7 @@ import { AssociateForm, type AssociateFormData } from '../components/AssociateFo
 import { useCreateAssociate } from '../hooks/useAssociates';
 import { Modal } from '@shared/components/ui';
 import { useToast } from '@shared/hooks/useToast';
+import { useCanAccess } from '@shared/hooks/useMyPermissions';
 
 export function AssociatesPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -12,6 +13,9 @@ export function AssociatesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const createAssociate = useCreateAssociate();
   const { addToast } = useToast();
+  const canCreate = useCanAccess('associates', 'create');
+  const canEdit = useCanAccess('associates', 'edit');
+  const canDelete = useCanAccess('associates', 'delete');
 
   const handleFilterChange = (key: string, value: string) => {
     if (key === 'status') {
@@ -30,7 +34,7 @@ export function AssociatesPage() {
         <AssociatesHeader
           onSearch={setSearchTerm}
           onFilterChange={handleFilterChange}
-          onAdd={handleAdd}
+          onAdd={canCreate ? handleAdd : undefined}
         />
       </div>
 
@@ -39,6 +43,8 @@ export function AssociatesPage() {
         <AssociatesTable
           searchTerm={searchTerm}
           statusFilter={statusFilter}
+          canEdit={canEdit}
+          canDelete={canDelete}
         />
       </div>
 

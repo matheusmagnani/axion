@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { List, CaretLeft, CaretRight, ToggleLeft, ToggleRight, PencilSimple } from '@phosphor-icons/react';
-import { useAssociates, useUpdateAssociate } from '../hooks/useAssociates';
+import { useNavigate } from 'react-router-dom';
+import { List, CaretLeft, CaretRight, ToggleLeft, ToggleRight, PencilSimple, Trash } from '@phosphor-icons/react';
+import { useAssociates, useUpdateAssociate, useDeleteAssociate } from '../hooks/useAssociates';
 import { AssociateForm, type AssociateFormData } from './AssociateForm';
 
 import { StatusBadge } from '@shared/components/Badge/StatusBadge';
@@ -14,9 +15,12 @@ import { useToast } from '@shared/hooks/useToast';
 interface AssociatesTableProps {
   searchTerm?: string;
   statusFilter?: string;
+  canEdit?: boolean;
+  canDelete?: boolean;
 }
 
-export function AssociatesTable({ searchTerm = '', statusFilter = '' }: AssociatesTableProps) {
+export function AssociatesTable({ searchTerm = '', statusFilter = '', canEdit = true, canDelete = true }: AssociatesTableProps) {
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const limit = 10;
 
@@ -36,7 +40,9 @@ export function AssociatesTable({ searchTerm = '', statusFilter = '' }: Associat
   const [menuPos, setMenuPos] = useState<{ top: number; right: number }>({ top: 0, right: 0 });
   const menuRef = useRef<HTMLDivElement>(null);
   const [editAssociate, setEditAssociate] = useState<{ id: number; name: string; cpf: string; email: string; phone: string } | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
   const updateAssociate = useUpdateAssociate();
+  const deleteAssociate = useDeleteAssociate();
   const { addToast } = useToast();
 
   const handleOpenMenu = (id: number, buttonEl: HTMLButtonElement) => {
@@ -49,12 +55,14 @@ export function AssociatesTable({ searchTerm = '', statusFilter = '' }: Associat
     const cardRect = cardEl ? cardEl.getBoundingClientRect() : rect;
     setMenuPos({ top: cardRect.bottom, right: window.innerWidth - cardRect.right });
     setOpenMenuId(id);
+    setDeleteConfirmId(null);
   };
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setOpenMenuId(null);
+        setDeleteConfirmId(null);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -138,7 +146,7 @@ export function AssociatesTable({ searchTerm = '', statusFilter = '' }: Associat
         ) : (
           associates.map((associate) => {
             const isSelected = selectedIds.has(associate.id);
-            const isActive = associate.status === 'ACTIVE';
+            const isActive = associate.status === 1;
             return (
               <ListCard
                 key={associate.id}
@@ -146,7 +154,10 @@ export function AssociatesTable({ searchTerm = '', statusFilter = '' }: Associat
                 onSelect={() => toggleSelect(associate.id)}
                 columns="grid-cols-[50px_1fr_1fr_120px_60px]"
               >
-                <div className="flex flex-col items-center gap-1">
+                <div
+                  className="flex flex-col items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => navigate(`/associates/${associate.id}`)}
+                >
                   <span className="text-app-secondary/80 text-base font-light">
                     {associate.name}
                   </span>
@@ -169,67 +180,113 @@ export function AssociatesTable({ searchTerm = '', statusFilter = '' }: Associat
                 </div>
 
                 <div className="flex justify-center">
-                  <button
-                    onClick={(e) => handleOpenMenu(associate.id, e.currentTarget)}
-                    className="p-2 hover:bg-black/10 rounded transition-colors"
-                  >
-                    <List className="w-6 h-6 text-app-secondary" weight="bold" />
-                  </button>
-                  {openMenuId === associate.id && createPortal(
-                    <div
-                      ref={menuRef}
-                      className="fixed z-50 bg-app-primary border border-app-secondary/20 rounded-lg shadow-lg w-[160px]"
-                      style={{ top: menuPos.top, right: menuPos.right, transform: 'translateY(-15px)' }}
-                    >
+                  {(canEdit || canDelete) && (
+                    <>
                       <button
-                        onClick={() => {
-                          const newStatus = isActive ? 'INACTIVE' : 'ACTIVE';
-                          updateAssociate.mutate({ id: associate.id, data: { status: newStatus } }, {
-                            onSuccess: () => {
-                              addToast(
-                                newStatus === 'ACTIVE' ? 'Associado ativado!' : 'Associado inativado!',
-                                'success'
-                              );
-                              setOpenMenuId(null);
-                            },
-                            onError: (error) => {
-                              addToast(error.message, 'danger');
-                              setOpenMenuId(null);
-                            },
-                          });
-                        }}
-                        className="flex items-center w-full pl-3 pr-4 py-1.5 text-sm hover:bg-app-secondary/10 rounded-lg transition-colors"
+                        onClick={(e) => handleOpenMenu(associate.id, e.currentTarget)}
+                        className="p-2 hover:bg-black/10 rounded transition-colors"
                       >
-                        {isActive ? (
-                          <>
-                            <ToggleLeft className="w-6 h-6 text-red-400 shrink-0" weight="light" />
-                            <span className="text-red-400 flex-1 text-center">Inativar</span>
-                          </>
-                        ) : (
-                          <>
-                            <ToggleRight className="w-6 h-6 text-emerald-400 shrink-0" weight="fill" />
-                            <span className="text-emerald-400 flex-1 text-center">Ativar</span>
-                          </>
-                        )}
+                        <List className="w-6 h-6 text-app-secondary" weight="bold" />
                       </button>
-                      <button
-                        onClick={() => {
-                          setEditAssociate({
-                            id: associate.id,
-                            name: associate.name,
-                            cpf: associate.cpf,
-                            email: associate.email,
-                            phone: associate.phone,
-                          });
-                          setOpenMenuId(null);
-                        }}
-                        className="flex items-center w-full pl-3 pr-4 py-1.5 text-sm hover:bg-app-secondary/10 rounded-lg transition-colors"
-                      >
-                        <PencilSimple className="w-6 h-6 text-app-secondary shrink-0" weight="regular" />
-                        <span className="text-app-secondary flex-1 text-center">Editar</span>
-                      </button>
-                    </div>,
-                    document.body
+                      {openMenuId === associate.id && createPortal(
+                        <div
+                          ref={menuRef}
+                          className="fixed z-50 bg-app-primary border border-app-secondary/20 rounded-lg shadow-lg w-[160px]"
+                          style={{ top: menuPos.top, right: menuPos.right, transform: 'translateY(-15px)' }}
+                        >
+                          {canEdit && (
+                            <button
+                              onClick={() => {
+                                const newStatus = isActive ? 0 : 1;
+                                updateAssociate.mutate({ id: associate.id, data: { status: newStatus } }, {
+                                  onSuccess: () => {
+                                    addToast(
+                                      newStatus === 1 ? 'Associado ativado!' : 'Associado inativado!',
+                                      'success'
+                                    );
+                                    setOpenMenuId(null);
+                                  },
+                                  onError: (error) => {
+                                    addToast(error.message, 'danger');
+                                    setOpenMenuId(null);
+                                  },
+                                });
+                              }}
+                              className="flex items-center w-full pl-3 pr-4 py-1.5 text-sm hover:bg-app-secondary/10 rounded-lg transition-colors"
+                            >
+                              {isActive ? (
+                                <>
+                                  <ToggleLeft className="w-6 h-6 text-app-secondary shrink-0" weight="light" />
+                                  <span className="text-app-secondary flex-1 text-center">Inativar</span>
+                                </>
+                              ) : (
+                                <>
+                                  <ToggleRight className="w-6 h-6 text-emerald-400 shrink-0" weight="fill" />
+                                  <span className="text-emerald-400 flex-1 text-center">Ativar</span>
+                                </>
+                              )}
+                            </button>
+                          )}
+                          {canEdit && (
+                            <button
+                              onClick={() => {
+                                setEditAssociate({
+                                  id: associate.id,
+                                  name: associate.name,
+                                  cpf: associate.cpf,
+                                  email: associate.email,
+                                  phone: associate.phone,
+                                });
+                                setOpenMenuId(null);
+                              }}
+                              className="flex items-center w-full pl-3 pr-4 py-1.5 text-sm hover:bg-app-secondary/10 rounded-lg transition-colors"
+                            >
+                              <PencilSimple className="w-6 h-6 text-app-secondary shrink-0" weight="regular" />
+                              <span className="text-app-secondary flex-1 text-center">Editar</span>
+                            </button>
+                          )}
+                          {canDelete && (
+                            deleteConfirmId === associate.id ? (
+                              <div className="flex items-center gap-1 px-2 py-1.5">
+                                <button
+                                  onClick={() => {
+                                    deleteAssociate.mutate(associate.id, {
+                                      onSuccess: () => {
+                                        addToast('Associado excluído com sucesso!', 'success');
+                                        setOpenMenuId(null);
+                                        setDeleteConfirmId(null);
+                                      },
+                                      onError: (error) => {
+                                        addToast(error.message, 'danger');
+                                        setDeleteConfirmId(null);
+                                      },
+                                    });
+                                  }}
+                                  className="flex-1 px-2 py-1 text-xs font-medium bg-red-500/20 text-red-400 rounded hover:bg-red-500/30 transition-colors"
+                                >
+                                  Confirmar
+                                </button>
+                                <button
+                                  onClick={() => setDeleteConfirmId(null)}
+                                  className="flex-1 px-2 py-1 text-xs font-medium text-app-secondary/70 rounded hover:bg-app-secondary/10 transition-colors"
+                                >
+                                  Cancelar
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => setDeleteConfirmId(associate.id)}
+                                className="flex items-center w-full pl-3 pr-4 py-1.5 text-sm hover:bg-app-secondary/10 rounded-lg transition-colors"
+                              >
+                                <Trash className="w-6 h-6 text-red-400 shrink-0" weight="regular" />
+                                <span className="text-red-400 flex-1 text-center">Excluir</span>
+                              </button>
+                            )
+                          )}
+                        </div>,
+                        document.body
+                      )}
+                    </>
                   )}
                 </div>
               </ListCard>

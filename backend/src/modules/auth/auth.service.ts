@@ -3,7 +3,7 @@ import path from 'node:path';
 import bcrypt from 'bcryptjs';
 import { prisma } from '../../infra/database/prisma/client.js';
 import { UnauthorizedError, ConflictError } from '../../shared/errors/app-error.js';
-import type { LoginInput, RegisterInput, UpdateProfileInput } from './auth.schema.js';
+import type { LoginInput, RegisterInput, UpdateProfileInput, ChangePasswordInput } from './auth.schema.js';
 import type { FastifyInstance } from 'fastify';
 
 const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
@@ -16,9 +16,9 @@ export class AuthService {
   }
 
   async login(data: LoginInput) {
-    const user = await prisma.user.findUnique({
-      where: { email: data.email },
-      include: { company: true },
+    const user = await prisma.user.findFirst({
+      where: { email: data.email, deletedAt: null },
+      include: { company: true, role: { select: { id: true, name: true } } },
     });
 
     if (!user || !user.active) {
@@ -43,6 +43,8 @@ export class AuthService {
         email: user.email,
         avatar: user.avatar,
         companyId: user.companyId,
+        roleId: user.roleId,
+        role: user.role,
         company: {
           id: user.company.id,
           companyName: user.company.companyName,
@@ -64,15 +66,15 @@ export class AuthService {
   }
 
   async register(data: RegisterInput) {
-    const existingUser = await prisma.user.findUnique({
-      where: { email: data.email },
+    const existingUser = await prisma.user.findFirst({
+      where: { email: data.email, deletedAt: null },
     });
     if (existingUser) {
       throw new ConflictError('Email já cadastrado');
     }
 
-    const existingCompany = await prisma.company.findUnique({
-      where: { cnpj: data.cnpj },
+    const existingCompany = await prisma.company.findFirst({
+      where: { cnpj: data.cnpj, deletedAt: null },
     });
     if (existingCompany) {
       throw new ConflictError('CNPJ já cadastrado');
@@ -98,12 +100,35 @@ export class AuthService {
       },
     });
 
+    const defaultRole = await prisma.role.create({
+      data: {
+        name: 'Administrativo',
+        companyId: company.id,
+        status: 1,
+      },
+    });
+
+    const modules = ['associates', 'billings', 'connections', 'collaborators', 'settings'];
+    const actions = ['read', 'create', 'edit', 'delete'];
+
+    await prisma.permission.createMany({
+      data: modules.flatMap((module) =>
+        actions.map((action) => ({
+          roleId: defaultRole.id,
+          module,
+          action,
+          allowed: true,
+        }))
+      ),
+    });
+
     await prisma.user.create({
       data: {
         name: data.name,
         email: data.email,
         password: hashedPassword,
         companyId: company.id,
+        roleId: defaultRole.id,
       },
     });
 
@@ -153,7 +178,7 @@ export class AuthService {
   async updateProfile(userId: number, data: UpdateProfileInput) {
     if (data.email) {
       const existing = await prisma.user.findFirst({
-        where: { email: data.email, id: { not: userId } },
+        where: { email: data.email, id: { not: userId }, deletedAt: null },
       });
       if (existing) throw new ConflictError('Email já cadastrado');
     }
@@ -163,8 +188,9 @@ export class AuthService {
       data: {
         ...(data.name !== undefined && { name: data.name }),
         ...(data.email !== undefined && { email: data.email }),
+        ...(data.roleId !== undefined && { roleId: data.roleId }),
       },
-      include: { company: true },
+      include: { company: true, role: { select: { id: true, name: true } } },
     });
 
     return {
@@ -174,6 +200,8 @@ export class AuthService {
         email: updated.email,
         avatar: updated.avatar,
         companyId: updated.companyId,
+        roleId: updated.roleId,
+        role: updated.role,
         company: {
           id: updated.company.id,
           companyName: updated.company.companyName,
@@ -192,6 +220,24 @@ export class AuthService {
         },
       },
     };
+  }
+
+  async changePassword(userId: number, data: ChangePasswordInput) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new UnauthorizedError('Usuário não encontrado');
+
+    const validPassword = await bcrypt.compare(data.currentPassword, user.password);
+    if (!validPassword) {
+      throw new UnauthorizedError('Senha atual incorreta');
+    }
+
+    const hashedPassword = await bcrypt.hash(data.newPassword, 10);
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    });
+
+    return { message: 'Senha alterada com sucesso' };
   }
 
   static async hashPassword(password: string): Promise<string> {

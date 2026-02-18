@@ -13,4 +13,5 @@ export async function authRoutes(app: FastifyInstance) {
   app.patch('/avatar', { onRequest: [authenticate] }, controller.uploadAvatar.bind(controller));
   app.delete('/avatar', { onRequest: [authenticate] }, controller.removeAvatar.bind(controller));
   app.patch('/profile', { onRequest: [authenticate] }, controller.updateProfile.bind(controller));
+  app.patch('/change-password', { onRequest: [authenticate] }, controller.changePassword.bind(controller));
 }

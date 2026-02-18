@@ -9,4 +9,5 @@ export async function collaboratorRoutes(app: FastifyInstance) {
   app.put('/:id', controller.update.bind(controller));
   app.patch('/:id/change-password', controller.changePassword.bind(controller));
   app.patch('/:id/toggle-active', controller.toggleActive.bind(controller));
+  app.delete('/:id', controller.delete.bind(controller));
 }

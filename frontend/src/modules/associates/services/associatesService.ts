@@ -6,9 +6,44 @@ export interface Associate {
   cpf: string;
   email: string;
   phone: string;
-  status: 'ACTIVE' | 'INACTIVE' | 'PENDING';
+  status: number;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface Contract {
+  id: number;
+  number: string;
+  description: string | null;
+  value: string;
+  startDate: string;
+  endDate: string | null;
+  status: 'ACTIVE' | 'ENDED' | 'CANCELLED' | 'PENDING';
+  associateId: number;
+  companyId: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}
+
+export interface Billing {
+  id: number;
+  description: string;
+  value: string;
+  dueDate: string;
+  paymentDate: string | null;
+  status: 'PENDING' | 'PAID' | 'OVERDUE' | 'CANCELLED';
+  associateId: number;
+  contractId: number | null;
+  companyId: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}
+
+export interface AssociateDetail extends Associate {
+  contracts: Contract[];
+  billings: Billing[];
 }
 
 export interface CreateAssociateDTO {
@@ -16,7 +51,7 @@ export interface CreateAssociateDTO {
   cpf: string;
   email: string;
   phone: string;
-  status?: 'ACTIVE' | 'INACTIVE' | 'PENDING';
+  status?: number;
 }
 
 export interface UpdateAssociateDTO {
@@ -24,7 +59,7 @@ export interface UpdateAssociateDTO {
   cpf?: string;
   email?: string;
   phone?: string;
-  status?: 'ACTIVE' | 'INACTIVE' | 'PENDING';
+  status?: number;
 }
 
 export interface ListAssociatesParams {
@@ -52,8 +87,8 @@ export const associatesService = {
     return response.data;
   },
 
-  async getById(id: number): Promise<Associate> {
-    const response = await api.get<Associate>(`/api/associates/${id}`);
+  async getById(id: number): Promise<AssociateDetail> {
+    const response = await api.get<AssociateDetail>(`/api/associates/${id}`);
     return response.data;
   },
 

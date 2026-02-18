@@ -11,6 +11,8 @@ import { authRoutes } from './modules/auth/auth.routes.js';
 import { associateRoutes } from './modules/associates/associate.routes.js';
 import { collaboratorRoutes } from './modules/collaborators/collaborator.routes.js';
 import { settingsRoutes } from './modules/settings/settings.routes.js';
+import { roleRoutes } from './modules/roles/role.routes.js';
+import { permissionRoutes } from './modules/permissions/permission.routes.js';
 import { prisma } from './infra/database/prisma/client.js';
 
 const app = Fastify({
@@ -68,6 +70,8 @@ const start = async () => {
     app.register(associateRoutes, { prefix: '/api/associates' });
     app.register(collaboratorRoutes, { prefix: '/api/collaborators' });
     app.register(settingsRoutes, { prefix: '/api/settings' });
+    app.register(roleRoutes, { prefix: '/api/roles' });
+    app.register(permissionRoutes, { prefix: '/api/permissions' });
 
     // Test database connection
     await prisma.$connect();
