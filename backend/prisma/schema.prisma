@@ -47,6 +47,7 @@ model Company {
   associates Associate[]
   contracts  Contract[]
   billings   Billing[]
+  products   Product[]
 
   @@map("companies")
 }
@@ -171,4 +172,22 @@ model User {
   role      Role?   @relation(fields: [roleId], references: [id])
 
   @@map("users")
+}
+
+model Product {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  price       Decimal   @db.Decimal(10, 2)
+  image       String?
+  status      Int       @default(1)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  companyId   Int       @map("company_id")
+  company     Company   @relation(fields: [companyId], references: [id])
+
+  @@unique([name, companyId])
+  @@map("products")
 }
