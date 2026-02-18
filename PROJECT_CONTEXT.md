@@ -24,10 +24,11 @@
 - **settings** — configurações da empresa (GET/PUT company info)
 - **roles** — CRUD de setores por empresa
 - **permissions** — Gerenciamento de permissões por setor (GET/PUT por roleId)
+- **products** — CRUD de produtos por empresa (nome, descrição, valor, imagem, status) com upload de imagem
 
 ### Models (Prisma)
 
-- Company, User, Associate, Contract, Billing, Role, Permission
+- Company, User, Associate, Contract, Billing, Role, Permission, Product
 - User possui campo `avatar` (String?) — caminho relativo do arquivo
 - User possui campo `roleId` (Int?) — setor do usuário (relação com Role)
 - Role pertence a uma Company (cada empresa tem seus próprios setores)
@@ -41,13 +42,14 @@
 
 - **Associate status** — `Int`: 0 = inativo, 1 = ativo, 2 = pendente (default 2)
 - **Role status** — `Int`: 0 = inativo, 1 = ativo (default 1)
+- **Product status** — `Int`: 0 = inativo, 1 = ativo (default 1)
 - `ContractStatus` — ACTIVE, ENDED, CANCELLED, PENDING (enum)
 - `BillingStatus` — PENDING, PAID, OVERDUE, CANCELLED (enum)
 
 ### Padrão de Soft Delete
 
-- Todas as tabelas (Company, User, Associate, Contract, Billing, Role) possuem campo `deletedAt`
-- Ao excluir um registro, setar `deletedAt = new Date()` **E inativar** (`status = 0` para Associate/Role, `active = false` para User)
+- Todas as tabelas (Company, User, Associate, Contract, Billing, Role, Product) possuem campo `deletedAt`
+- Ao excluir um registro, setar `deletedAt = new Date()` **E inativar** (`status = 0` para Associate/Role/Product, `active = false` para User)
 - Em todas as queries de leitura (findAll, findById, findByName, etc.), adicionar `deletedAt: null` no `where`
 - Registros soft-deleted não aparecem em listagens e não podem ser usados para login
 
@@ -108,6 +110,17 @@
 Módulos: `associates`, `billings`, `connections`, `collaborators`, `settings`
 Ações: `read`, `create`, `edit`, `delete`
 
+### Endpoints de Products
+
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| GET | /api/products | Sim | Listar produtos (paginação, busca, filtro status) |
+| GET | /api/products/:id | Sim | Buscar produto por ID |
+| POST | /api/products | Sim | Criar produto (multipart: name, description, price, image?) |
+| PUT | /api/products/:id | Sim | Atualizar produto (multipart: name?, description?, price?, status?, image?) |
+| DELETE | /api/products/:id/image | Sim | Remover imagem do produto |
+| DELETE | /api/products/:id | Sim | Excluir produto (soft delete) |
+
 ### Upload de avatars
 
 - Arquivos salvos em `backend/uploads/avatars/`
@@ -115,6 +128,13 @@ Ações: `read`, `create`, `edit`, `delete`
 - Tipos permitidos: JPEG, PNG, WebP
 - Tamanho máximo: 5MB
 - `backend/uploads/` está no .gitignore
+
+### Upload de imagens de produtos
+
+- Arquivos salvos em `backend/uploads/products/`
+- Nome: `{productId}-{timestamp}.{ext}`
+- Tipos permitidos: JPEG, PNG, WebP
+- Tamanho máximo: 5MB
 
 ## Frontend
 
@@ -183,15 +203,18 @@ modules/settings/
 │   ├── SettingsSection.tsx      # Componente base para seções expansíveis
 │   ├── CompanyInfoSection.tsx   # Seção de informações da empresa
 │   ├── RolesSection.tsx         # Seção de setores (CRUD + toggle status)
-│   └── PermissionsSection.tsx   # Seção de permissões por setor (grid módulo x ação)
+│   ├── PermissionsSection.tsx   # Seção de permissões por setor (grid módulo x ação)
+│   └── ProductsSection.tsx      # Seção de produtos (CRUD + toggle status + upload imagem)
 ├── hooks/
 │   ├── useSettings.ts           # Hooks React Query (useCompanyInfo, useUpdateCompanyInfo)
 │   ├── useRoles.ts              # Hooks React Query (useRoles, useCreateRole, useUpdateRole, useDeleteRole)
-│   └── usePermissions.ts        # Hooks React Query (usePermissions, useUpdatePermissions)
+│   ├── usePermissions.ts        # Hooks React Query (usePermissions, useUpdatePermissions)
+│   └── useProducts.ts           # Hooks React Query (useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct, useRemoveProductImage)
 └── services/
     ├── settingsService.ts       # API service (company info)
     ├── roleService.ts           # API service (roles CRUD)
-    └── permissionService.ts     # API service (permissions GET/PUT by roleId)
+    ├── permissionService.ts     # API service (permissions GET/PUT by roleId)
+    └── productService.ts        # API service (products CRUD + upload/remove image)
 ```
 
 **Seções implementadas:**
@@ -199,8 +222,7 @@ modules/settings/
 - **Setores** — CRUD de setores com toggle de status (ativo/inativo), edição de nome, exclusão com confirmação
 - **Permissões** — Grid de permissões por setor (módulos x ações com checkboxes), select de setor, salvar permissões
 
-**Seções planejadas:**
-- Produtos
+- **Produtos** — CRUD de produtos com nome, descrição, valor (R$), imagem (upload), toggle de status (ativo/inativo), exclusão com confirmação
 
 ### Módulo Associates (Associados)
 

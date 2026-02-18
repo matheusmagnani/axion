@@ -13,6 +13,7 @@ import { collaboratorRoutes } from './modules/collaborators/collaborator.routes.
 import { settingsRoutes } from './modules/settings/settings.routes.js';
 import { roleRoutes } from './modules/roles/role.routes.js';
 import { permissionRoutes } from './modules/permissions/permission.routes.js';
+import { productRoutes } from './modules/products/product.routes.js';
 import { prisma } from './infra/database/prisma/client.js';
 
 const app = Fastify({
@@ -72,6 +73,7 @@ const start = async () => {
     app.register(settingsRoutes, { prefix: '/api/settings' });
     app.register(roleRoutes, { prefix: '/api/roles' });
     app.register(permissionRoutes, { prefix: '/api/permissions' });
+    app.register(productRoutes, { prefix: '/api/products' });
 
     // Test database connection
     await prisma.$connect();
