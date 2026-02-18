@@ -1,84 +1,17 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, PencilSimple, Trash, FileText, CurrencyDollar } from '@phosphor-icons/react';
+import { ArrowLeft, PencilSimple, Trash, ToggleLeft, ToggleRight } from '@phosphor-icons/react';
 import { useAssociate, useUpdateAssociate, useDeleteAssociate } from '../hooks/useAssociates';
 import { AssociateForm, type AssociateFormData } from '../components/AssociateForm';
-import type { Contract, Billing } from '../services/associatesService';
 import { StatusBadge } from '@shared/components/Badge/StatusBadge';
-import { Modal } from '@shared/components/ui';
+import { MagicBentoCard } from '@shared/components/ui/MagicBentoCard';
+import { Modal, CopyText } from '@shared/components/ui';
 import { useCanAccess } from '@shared/hooks/useMyPermissions';
 import { useToast } from '@shared/hooks/useToast';
 import { formatCPF, formatPhone } from '@shared/utils/formatters';
 
-const contractStatusLabels: Record<string, { label: string; className: string }> = {
-  ACTIVE: { label: 'Ativo', className: 'bg-green-500/20 text-green-400 border-green-500/50' },
-  ENDED: { label: 'Encerrado', className: 'bg-app-secondary/20 text-app-secondary/70 border-app-secondary/30' },
-  CANCELLED: { label: 'Cancelado', className: 'bg-red-500/20 text-red-400 border-red-500/50' },
-  PENDING: { label: 'Pendente', className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50' },
-};
-
-const billingStatusLabels: Record<string, { label: string; className: string }> = {
-  PENDING: { label: 'Pendente', className: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50' },
-  PAID: { label: 'Pago', className: 'bg-green-500/20 text-green-400 border-green-500/50' },
-  OVERDUE: { label: 'Vencido', className: 'bg-red-500/20 text-red-400 border-red-500/50' },
-  CANCELLED: { label: 'Cancelado', className: 'bg-app-secondary/20 text-app-secondary/70 border-app-secondary/30' },
-};
-
-function EnumBadge({ config }: { config: { label: string; className: string } }) {
-  return (
-    <span className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-medium border whitespace-nowrap ${config.className}`}>
-      {config.label}
-    </span>
-  );
-}
-
-function formatCurrency(value: string) {
-  return Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-}
-
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('pt-BR');
-}
-
-function ContractCard({ contract }: { contract: Contract }) {
-  const config = contractStatusLabels[contract.status] ?? contractStatusLabels.PENDING;
-  return (
-    <div className="bg-app-primary/50 border border-app-secondary/20 rounded-lg p-4 flex flex-col gap-2">
-      <div className="flex items-center justify-between">
-        <span className="text-app-secondary font-medium text-sm">#{contract.number}</span>
-        <EnumBadge config={config} />
-      </div>
-      {contract.description && (
-        <p className="text-app-secondary/70 text-sm">{contract.description}</p>
-      )}
-      <div className="flex items-center justify-between text-sm">
-        <span className="text-app-secondary/60">Valor: <span className="text-app-secondary">{formatCurrency(contract.value)}</span></span>
-        <span className="text-app-secondary/60">
-          {formatDate(contract.startDate)}
-          {contract.endDate ? ` - ${formatDate(contract.endDate)}` : ' - Em aberto'}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-function BillingCard({ billing }: { billing: Billing }) {
-  const config = billingStatusLabels[billing.status] ?? billingStatusLabels.PENDING;
-  return (
-    <div className="bg-app-primary/50 border border-app-secondary/20 rounded-lg p-4 flex flex-col gap-2">
-      <div className="flex items-center justify-between">
-        <span className="text-app-secondary font-medium text-sm">{billing.description}</span>
-        <EnumBadge config={config} />
-      </div>
-      <div className="flex items-center justify-between text-sm">
-        <span className="text-app-secondary/60">Valor: <span className="text-app-secondary">{formatCurrency(billing.value)}</span></span>
-        <span className="text-app-secondary/60">Vencimento: {formatDate(billing.dueDate)}</span>
-      </div>
-      {billing.paymentDate && (
-        <span className="text-green-400/80 text-xs">Pago em {formatDate(billing.paymentDate)}</span>
-      )}
-    </div>
-  );
 }
 
 export function AssociateDetailPage() {
@@ -94,6 +27,7 @@ export function AssociateDetailPage() {
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteConfirm, setIsDeleteConfirm] = useState(false);
+  const [activeTab, setActiveTab] = useState<'contracts' | 'billings'>('contracts');
 
   if (isLoading) {
     return (
@@ -132,29 +66,40 @@ export function AssociateDetailPage() {
 
   return (
     <div className="flex flex-col h-full px-2 md:px-4 lg:px-[25px] py-2 md:py-4 lg:py-[25px] w-full overflow-y-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => navigate('/associates')}
-            className="p-2 hover:bg-app-secondary/10 rounded-lg transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5 text-app-secondary" weight="bold" />
-          </button>
-          <div className="flex items-center gap-3">
-            <h1 className="text-app-secondary text-xl font-semibold">{associate.name}</h1>
-            <StatusBadge status={associate.status} />
-          </div>
-        </div>
+      {/* Top bar */}
+      <div className="flex items-center justify-between mb-2">
+        <button
+          onClick={() => navigate('/associates')}
+          className="p-2 hover:bg-app-secondary/10 rounded-lg transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5 text-app-secondary" weight="bold" />
+        </button>
 
         <div className="flex items-center gap-2">
           {canEdit && (
             <button
-              onClick={() => setIsEditModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 text-sm text-app-secondary hover:bg-app-secondary/10 rounded-lg transition-colors border border-app-secondary/20"
+              onClick={() => {
+                const newStatus = associate.status === 1 ? 0 : 1;
+                updateAssociate.mutate({ id: associate.id, data: { status: newStatus } }, {
+                  onSuccess: () => {
+                    addToast(newStatus === 1 ? 'Associado ativado!' : 'Associado inativado!', 'success');
+                  },
+                  onError: (error) => {
+                    addToast(error.message, 'danger');
+                  },
+                });
+              }}
+              className="p-2 hover:bg-app-secondary/10 rounded-lg transition-colors relative group"
+              title={associate.status === 1 ? 'Inativar' : 'Ativar'}
             >
-              <PencilSimple className="w-4 h-4" weight="regular" />
-              Editar
+              {associate.status === 1 ? (
+                <ToggleRight className="w-8 h-8 text-green-400" weight="fill" />
+              ) : (
+                <ToggleLeft className="w-8 h-8 text-app-secondary/50" weight="light" />
+              )}
+              <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-xs text-app-secondary bg-app-primary border border-app-secondary/20 px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                {associate.status === 1 ? 'Inativar' : 'Ativar'}
+              </span>
             </button>
           )}
           {canDelete && (
@@ -169,63 +114,96 @@ export function AssociateDetailPage() {
         </div>
       </div>
 
-      {/* Info Section */}
-      <div className="bg-app-primary rounded-lg border border-app-secondary/20 p-6 mb-6">
-        <h2 className="text-app-secondary text-lg font-medium mb-4">Informações Pessoais</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Header */}
+      <MagicBentoCard className="bg-app-primary rounded-lg border border-app-secondary/20 p-10 mb-2">
+        <div className="relative z-10">
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-3">
+            <h1 className="text-app-secondary text-4xl font-semibold">{associate.name}</h1>
+            <StatusBadge status={associate.status} />
+          </div>
+
+          {canEdit && (
+            <button
+              onClick={() => setIsEditModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 text-sm text-app-secondary hover:bg-app-secondary/10 rounded-lg transition-colors border border-app-secondary/20"
+            >
+              <PencilSimple className="w-4 h-4" weight="regular" />
+              Editar
+            </button>
+          )}
+        </div>
+
+        <div className="border-t border-app-secondary/15 mt-8 pt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
             <span className="text-app-secondary/50 text-xs block mb-1">CPF</span>
-            <span className="text-app-secondary text-sm">{formatCPF(associate.cpf)}</span>
+            <CopyText value={associate.cpf}>
+              <span className="text-app-secondary text-sm">{formatCPF(associate.cpf)}</span>
+            </CopyText>
           </div>
           <div>
             <span className="text-app-secondary/50 text-xs block mb-1">Email</span>
-            <span className="text-app-secondary text-sm">{associate.email}</span>
+            <CopyText value={associate.email}>
+              <span className="text-app-secondary text-sm">{associate.email}</span>
+            </CopyText>
           </div>
           <div>
             <span className="text-app-secondary/50 text-xs block mb-1">Telefone</span>
-            <span className="text-app-secondary text-sm">{formatPhone(associate.phone)}</span>
+            <CopyText value={associate.phone}>
+              <span className="text-app-secondary text-sm">{formatPhone(associate.phone)}</span>
+            </CopyText>
           </div>
           <div>
             <span className="text-app-secondary/50 text-xs block mb-1">Data de Cadastro</span>
             <span className="text-app-secondary text-sm">{formatDate(associate.createdAt)}</span>
           </div>
         </div>
-      </div>
-
-      {/* Contracts Section */}
-      <div className="bg-app-primary rounded-lg border border-app-secondary/20 p-6 mb-6">
-        <div className="flex items-center gap-2 mb-4">
-          <FileText className="w-5 h-5 text-app-secondary" weight="regular" />
-          <h2 className="text-app-secondary text-lg font-medium">Contratos</h2>
-          <span className="text-app-secondary/50 text-sm">({associate.contracts.length})</span>
         </div>
-        {associate.contracts.length === 0 ? (
-          <p className="text-app-secondary/50 text-sm text-center py-6">Nenhum contrato encontrado</p>
-        ) : (
-          <div className="flex flex-col gap-3">
-            {associate.contracts.map((contract) => (
-              <ContractCard key={contract.id} contract={contract} />
-            ))}
-          </div>
-        )}
-      </div>
+      </MagicBentoCard>
 
-      {/* Billings Section */}
-      <div className="bg-app-primary rounded-lg border border-app-secondary/20 p-6 mb-6">
-        <div className="flex items-center gap-2 mb-4">
-          <CurrencyDollar className="w-5 h-5 text-app-secondary" weight="regular" />
-          <h2 className="text-app-secondary text-lg font-medium">Cobranças</h2>
-          <span className="text-app-secondary/50 text-sm">({associate.billings.length})</span>
+      {/* Tabs Section */}
+      <div className="bg-app-primary rounded-lg border border-app-secondary/20 flex-1 flex flex-col min-h-0">
+        <div className="flex items-center border-b border-app-secondary/15 px-10">
+          <button
+            onClick={() => setActiveTab('contracts')}
+            className={`px-4 py-4 text-sm font-medium transition-colors relative ${
+              activeTab === 'contracts'
+                ? 'text-app-secondary'
+                : 'text-app-secondary/40 hover:text-app-secondary/70'
+            }`}
+          >
+            Contratos
+            {activeTab === 'contracts' && (
+              <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-app-secondary rounded-t" />
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab('billings')}
+            className={`px-4 py-4 text-sm font-medium transition-colors relative ${
+              activeTab === 'billings'
+                ? 'text-app-secondary'
+                : 'text-app-secondary/40 hover:text-app-secondary/70'
+            }`}
+          >
+            Cobranças
+            {activeTab === 'billings' && (
+              <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-app-secondary rounded-t" />
+            )}
+          </button>
         </div>
-        {associate.billings.length === 0 ? (
-          <p className="text-app-secondary/50 text-sm text-center py-6">Nenhuma cobrança encontrada</p>
-        ) : (
-          <div className="flex flex-col gap-3">
-            {associate.billings.map((billing) => (
-              <BillingCard key={billing.id} billing={billing} />
-            ))}
-          </div>
-        )}
+
+        <div className="flex-1 overflow-y-auto p-10">
+          {activeTab === 'contracts' && (
+            <div className="text-app-secondary/50 text-sm text-center py-6">
+              Contratos em breve
+            </div>
+          )}
+          {activeTab === 'billings' && (
+            <div className="text-app-secondary/50 text-sm text-center py-6">
+              Cobranças em breve
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Edit Modal */}
@@ -264,7 +242,9 @@ export function AssociateDetailPage() {
       >
         <div className="flex flex-col gap-4 min-w-[400px]">
           <p className="text-app-secondary/70 text-sm">
-            Tem certeza que deseja excluir o associado <strong className="text-app-secondary">{associate.name}</strong>? Esta ação não pode ser desfeita.
+            Tem certeza que deseja excluir <strong className="text-app-secondary">{associate.name}</strong>?
+            <br />Contratos, cobranças e demais registros vinculados também serão excluídos.
+            <br />Esta ação não pode ser desfeita.
           </p>
           <div className="flex items-center justify-end gap-3">
             <button

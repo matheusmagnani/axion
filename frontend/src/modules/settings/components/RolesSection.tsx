@@ -210,8 +210,8 @@ export function RolesSection() {
                           </>
                         ) : (
                           <>
-                            <ToggleRight className="w-6 h-6 text-emerald-400 shrink-0" weight="fill" />
-                            <span className="text-emerald-400 flex-1 text-center">Ativar</span>
+                            <ToggleRight className="w-6 h-6 text-green-400 shrink-0" weight="fill" />
+                            <span className="text-green-400 flex-1 text-center">Ativar</span>
                           </>
                         )}
                       </button>

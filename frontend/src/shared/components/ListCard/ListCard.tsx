@@ -6,13 +6,22 @@ interface ListCardProps {
   isSelected: boolean;
   onSelect: () => void;
   columns: string;
+  onClick?: () => void;
 }
 
-export function ListCard({ children, isSelected, onSelect, columns }: ListCardProps) {
+export function ListCard({ children, isSelected, onSelect, columns, onClick }: ListCardProps) {
+  const handleCardClick = (e: React.MouseEvent) => {
+    if (!onClick) return;
+    const target = e.target as HTMLElement;
+    if (target.closest('button, input, [role="checkbox"], a')) return;
+    onClick();
+  };
+
   return (
     <div
       data-card
-      className={`flex-shrink-0 grid ${columns} items-center bg-app-primary/30 py-4 px-4 rounded-[10px] border-[0.5px] border-app-secondary/30 relative`}
+      onClick={handleCardClick}
+      className={`flex-shrink-0 grid ${columns} items-center bg-app-primary/30 py-4 px-4 rounded-[10px] border-[0.5px] border-app-secondary/30 relative ${onClick ? 'cursor-pointer hover:bg-app-primary/50 transition-colors' : ''}`}
     >
       {/* Selection overlay animation */}
       <div

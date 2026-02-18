@@ -153,11 +153,9 @@ export function AssociatesTable({ searchTerm = '', statusFilter = '', canEdit = 
                 isSelected={isSelected}
                 onSelect={() => toggleSelect(associate.id)}
                 columns="grid-cols-[50px_1fr_1fr_120px_60px]"
+                onClick={() => navigate(`/associates/${associate.id}`)}
               >
-                <div
-                  className="flex flex-col items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity"
-                  onClick={() => navigate(`/associates/${associate.id}`)}
-                >
+                <div className="flex flex-col items-center gap-1">
                   <span className="text-app-secondary/80 text-base font-light">
                     {associate.name}
                   </span>
@@ -221,8 +219,8 @@ export function AssociatesTable({ searchTerm = '', statusFilter = '', canEdit = 
                                 </>
                               ) : (
                                 <>
-                                  <ToggleRight className="w-6 h-6 text-emerald-400 shrink-0" weight="fill" />
-                                  <span className="text-emerald-400 flex-1 text-center">Ativar</span>
+                                  <ToggleRight className="w-6 h-6 text-green-400 shrink-0" weight="fill" />
+                                  <span className="text-green-400 flex-1 text-center">Ativar</span>
                                 </>
                               )}
                             </button>

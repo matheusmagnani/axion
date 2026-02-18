@@ -191,7 +191,7 @@ export function CollaboratorsTable({ searchTerm = '', activeFilter = '', canEdit
                   <span
                     className={`px-3 py-1 rounded-full text-xs font-medium ${
                       collaborator.active
-                        ? 'bg-emerald-500/20 text-emerald-400'
+                        ? 'bg-green-500/20 text-green-400'
                         : 'bg-red-500/20 text-red-400'
                     }`}
                   >
@@ -252,8 +252,8 @@ export function CollaboratorsTable({ searchTerm = '', activeFilter = '', canEdit
                                 </>
                               ) : (
                                 <>
-                                  <ToggleRight className="w-6 h-6 text-emerald-400 shrink-0" weight="fill" />
-                                  <span className="text-emerald-400 flex-1 text-center">Ativar</span>
+                                  <ToggleRight className="w-6 h-6 text-green-400 shrink-0" weight="fill" />
+                                  <span className="text-green-400 flex-1 text-center">Ativar</span>
                                 </>
                               )}
                             </button>
