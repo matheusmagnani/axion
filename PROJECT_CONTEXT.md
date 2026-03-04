@@ -25,10 +25,13 @@
 - **roles** — CRUD de setores por empresa
 - **permissions** — Gerenciamento de permissões por setor (GET/PUT por roleId)
 - **products** — CRUD de produtos por empresa (nome, descrição, valor, imagem, status) com upload de imagem
+- **plans** — CRUD de planos por empresa (nome, descrição, productIds[], discountType, discountValue, status). Plano agrupa produtos e permite desconto (% ou R$)
+- **billings** — CRUD de cobranças avulsas por empresa (type, origin, planId, productIds[], discountType, discountValue, subtotal, value). Suporta cobranças vinculadas a planos ou produtos avulsos, com desconto adicional. Inclui busca de associados por nome/CPF
 
 ### Models (Prisma)
 
-- Company, User, Associate, Contract, Billing, Role, Permission, Product
+- Company, User, Associate, Contract, Billing, Role, Permission, Product, Plan
+- Billing possui campos: type (subscription|single), origin (plan|product), planId, productIds[], discountType, discountValue, subtotal, value (final)
 - User possui campo `avatar` (String?) — caminho relativo do arquivo
 - User possui campo `roleId` (Int?) — setor do usuário (relação com Role)
 - Role pertence a uma Company (cada empresa tem seus próprios setores)
@@ -43,13 +46,14 @@
 - **Associate status** — `Int`: 0 = inativo, 1 = ativo, 2 = pendente (default 2)
 - **Role status** — `Int`: 0 = inativo, 1 = ativo (default 1)
 - **Product status** — `Int`: 0 = inativo, 1 = ativo (default 1)
+- **Plan status** — `Int`: 0 = inativo, 1 = ativo (default 1)
 - `ContractStatus` — ACTIVE, ENDED, CANCELLED, PENDING (enum)
 - `BillingStatus` — PENDING, PAID, OVERDUE, CANCELLED (enum)
 
 ### Padrão de Soft Delete
 
-- Todas as tabelas (Company, User, Associate, Contract, Billing, Role, Product) possuem campo `deletedAt`
-- Ao excluir um registro, setar `deletedAt = new Date()` **E inativar** (`status = 0` para Associate/Role/Product, `active = false` para User)
+- Todas as tabelas (Company, User, Associate, Contract, Billing, Role, Product, Plan) possuem campo `deletedAt`
+- Ao excluir um registro, setar `deletedAt = new Date()` **E inativar** (`status = 0` para Associate/Role/Product/Plan, `active = false` para User)
 - Em todas as queries de leitura (findAll, findById, findByName, etc.), adicionar `deletedAt: null` no `where`
 - Registros soft-deleted não aparecem em listagens e não podem ser usados para login
 
@@ -120,6 +124,27 @@ Ações: `read`, `create`, `edit`, `delete`
 | PUT | /api/products/:id | Sim | Atualizar produto (multipart: name?, description?, price?, status?, image?) |
 | DELETE | /api/products/:id/image | Sim | Remover imagem do produto |
 | DELETE | /api/products/:id | Sim | Excluir produto (soft delete) |
+
+### Endpoints de Plans
+
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| GET | /api/plans | Sim | Listar planos (paginação, busca, filtro status) |
+| GET | /api/plans/:id | Sim | Buscar plano por ID |
+| POST | /api/plans | Sim | Criar plano (JSON: name, description?, productIds, discountType?, discountValue?) |
+| PUT | /api/plans/:id | Sim | Atualizar plano (JSON: campos opcionais) |
+| DELETE | /api/plans/:id | Sim | Excluir plano (soft delete) |
+
+### Endpoints de Billings
+
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| GET | /api/billings | Sim | Listar cobranças (paginação, busca por nome associado, filtros status/type) |
+| GET | /api/billings/:id | Sim | Buscar cobrança por ID (inclui dados do associado) |
+| POST | /api/billings | Sim | Criar cobrança (associateId, type, origin, planId?, productIds?, discount?, description, dueDate, value, subtotal) |
+| PUT | /api/billings/:id | Sim | Atualizar cobrança (status, description, dueDate) |
+| DELETE | /api/billings/:id | Sim | Cancelar cobrança (soft delete + status CANCELLED) |
+| GET | /api/billings/search-associates?search= | Sim | Buscar associados ativos por nome ou CPF (min 2 chars, max 10 resultados) |
 
 ### Upload de avatars
 
@@ -204,17 +229,20 @@ modules/settings/
 │   ├── CompanyInfoSection.tsx   # Seção de informações da empresa
 │   ├── RolesSection.tsx         # Seção de setores (CRUD + toggle status)
 │   ├── PermissionsSection.tsx   # Seção de permissões por setor (grid módulo x ação)
-│   └── ProductsSection.tsx      # Seção de produtos (CRUD + toggle status + upload imagem)
+│   ├── ProductsSection.tsx      # Seção de produtos (CRUD + toggle status + upload imagem)
+│   └── PlansSection.tsx         # Seção de planos (CRUD + toggle status + seleção de produtos + desconto)
 ├── hooks/
 │   ├── useSettings.ts           # Hooks React Query (useCompanyInfo, useUpdateCompanyInfo)
 │   ├── useRoles.ts              # Hooks React Query (useRoles, useCreateRole, useUpdateRole, useDeleteRole)
 │   ├── usePermissions.ts        # Hooks React Query (usePermissions, useUpdatePermissions)
-│   └── useProducts.ts           # Hooks React Query (useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct, useRemoveProductImage)
+│   ├── useProducts.ts           # Hooks React Query (useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct, useRemoveProductImage)
+│   └── usePlans.ts              # Hooks React Query (usePlans, useCreatePlan, useUpdatePlan, useDeletePlan)
 └── services/
     ├── settingsService.ts       # API service (company info)
     ├── roleService.ts           # API service (roles CRUD)
     ├── permissionService.ts     # API service (permissions GET/PUT by roleId)
-    └── productService.ts        # API service (products CRUD + upload/remove image)
+    ├── productService.ts        # API service (products CRUD + upload/remove image)
+    └── planService.ts           # API service (plans CRUD)
 ```
 
 **Seções implementadas:**
@@ -223,6 +251,7 @@ modules/settings/
 - **Permissões** — Grid de permissões por setor (módulos x ações com checkboxes), select de setor, salvar permissões
 
 - **Produtos** — CRUD de produtos com nome, descrição, valor (R$), imagem (upload), toggle de status (ativo/inativo), exclusão com confirmação
+- **Planos** — CRUD de planos que agrupam produtos, com desconto (% ou R$), preview de valor final em tempo real, toggle de status, exclusão com confirmação
 
 ### Módulo Associates (Associados)
 
@@ -250,6 +279,29 @@ modules/associates/
 - Modal de edição reutiliza AssociateForm
 - Modal de confirmação de exclusão com redirect para listagem
 
+### Módulo Billings (Cobranças)
+
+**Estrutura:**
+```
+modules/billings/
+├── pages/
+│   └── BillingsPage.tsx            # Listagem de cobranças com cards, filtros, busca
+├── components/
+│   ├── BillingsList.tsx            # Grid de cards com dados da cobrança + menu de ações
+│   └── CreateBillingModal.tsx      # Modal com fluxo progressivo (associado → tipo → origem → seleção → resumo)
+├── hooks/
+│   └── useBillings.ts             # Hooks React Query (useBillings, useCreate/Update/Delete, useSearchAssociates)
+└── services/
+    └── billingService.ts          # API service (CRUD + searchAssociates)
+```
+
+**Fluxo de criação:**
+1. Buscar associado por nome/CPF (dropdown com resultados)
+2. Selecionar tipo: Assinatura ou Cobrança Avulsa
+3. Selecionar origem: Plano ou Produto Avulso
+4. Selecionar plano (radio) ou produtos (checkboxes)
+5. Resumo: subtotal automático, desconto adicional (% ou R$), valor final, descrição editável, data de vencimento
+
 ### Permissões no Frontend (Enforcement)
 
 O sistema de permissões é aplicado no frontend via hook compartilhado:
@@ -272,3 +324,10 @@ O sistema de permissões é aplicado no frontend via hook compartilhado:
 - **Rotas** — `PermissionRoute` em `AppRoutes.tsx` redireciona para `/dashboard` se sem `read`
 - **Associados** — botão criar, editar, toggle status e excluir condicionados por `create`/`edit`/`delete`
 - **Colaboradores** — botão criar, editar, toggle, alterar senha e excluir condicionados por `create`/`edit`/`delete`
+- **Cobranças** — botão criar condicionado por `create`, editar e cancelar condicionados por `edit`/`delete`
+
+### Hooks Compartilhados (shared/hooks/)
+
+- `useMyPermissions()` / `useCanAccess(module, action)` — sistema de permissões (ver seção acima)
+- `useToast()` — exibir toasts de feedback (success, danger, warning)
+- `useCepSearch()` — busca de endereço por CEP com 4 sistemas de fallback (BrasilAPI → OpenCEP → AwesomeAPI → ViaCEP). Retorna `{ fetchAddress, isLoading }`. Usado em CompanyInfoSection e LoginPage

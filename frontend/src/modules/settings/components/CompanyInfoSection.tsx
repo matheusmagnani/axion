@@ -4,16 +4,7 @@ import { Input } from '@shared/components/ui';
 import { SettingsSection } from './SettingsSection';
 import { useCompanyInfo, useUpdateCompanyInfo } from '../hooks/useSettings';
 import { useToast } from '@shared/hooks/useToast';
-
-interface ViaCepResponse {
-  cep: string;
-  logradouro: string;
-  complemento: string;
-  bairro: string;
-  localidade: string;
-  uf: string;
-  erro?: boolean;
-}
+import { useCepSearch } from '@shared/hooks/useCepSearch';
 
 interface FormData {
   name: string;
@@ -52,48 +43,36 @@ export function CompanyInfoSection() {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [errors, setErrors] = useState<Partial<FormData>>({});
-  const [isLoadingCep, setIsLoadingCep] = useState(false);
 
   const { data: companyInfo, isLoading } = useCompanyInfo();
   const updateCompanyInfo = useUpdateCompanyInfo();
   const { addToast } = useToast();
+  const { fetchAddress, isLoading: isLoadingCep } = useCepSearch();
 
   const fetchAddressByCep = useCallback(async (cep: string) => {
-    const cleanCep = cep.replace(/\D/g, '');
-    if (cleanCep.length !== 8) return;
+    const result = await fetchAddress(cep);
 
-    setIsLoadingCep(true);
-    try {
-      const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
-      const data: ViaCepResponse = await response.json();
-
-      if (data.erro) {
-        addToast('CEP não encontrado', 'warning');
-        return;
-      }
-
-      setFormData(prev => ({
-        ...prev,
-        address: data.logradouro || prev.address,
-        neighborhood: data.bairro || prev.neighborhood,
-        city: data.localidade || prev.city,
-        state: data.uf || prev.state,
-      }));
-
-      // Limpa erros dos campos preenchidos
-      setErrors(prev => ({
-        ...prev,
-        address: undefined,
-        neighborhood: undefined,
-        city: undefined,
-        state: undefined,
-      }));
-    } catch {
-      addToast('Erro ao buscar CEP', 'danger');
-    } finally {
-      setIsLoadingCep(false);
+    if (!result) {
+      addToast('CEP não encontrado', 'warning');
+      return;
     }
-  }, [addToast]);
+
+    setFormData(prev => ({
+      ...prev,
+      address: result.street || prev.address,
+      neighborhood: result.neighborhood || prev.neighborhood,
+      city: result.city || prev.city,
+      state: result.state || prev.state,
+    }));
+
+    setErrors(prev => ({
+      ...prev,
+      address: undefined,
+      neighborhood: undefined,
+      city: undefined,
+      state: undefined,
+    }));
+  }, [fetchAddress, addToast]);
 
   const formatCNPJ = (value: string) => {
     const cleaned = value.replace(/\D/g, '').slice(0, 14);

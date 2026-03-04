@@ -1,5 +1,5 @@
 import * as React from "react"
-import { X, Eye, EyeSlash } from "@phosphor-icons/react"
+import { X, Eye, EyeSlash, CalendarBlank } from "@phosphor-icons/react"
 import { cn } from "@/shared/utils/cn"
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -15,6 +15,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     const inputRef = (ref as React.RefObject<HTMLInputElement>) || internalRef
     const hasValue = value !== undefined ? String(value).length > 0 : false
     const isPassword = type === 'password'
+    const isDate = type === 'date'
     const [showPassword, setShowPassword] = React.useState(false)
 
     const handleClear = () => {
@@ -53,14 +54,19 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
               "focus:border-app-secondary focus:bg-app-bg/80",
               "hover:border-app-secondary/50",
               icon ? "pl-12" : "px-4",
-              (hasValue || isPassword) ? "pr-10" : "pr-4",
+              (hasValue || isPassword || isDate) ? "pr-10" : "pr-4",
+              isDate && "[&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer",
               error && "border-red-500/50 focus:border-red-500",
               className
             )}
             disabled={disabled}
             {...props}
           />
-          {disabled ? null : isPassword ? (
+          {disabled ? null : isDate ? (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-app-secondary pointer-events-none">
+              <CalendarBlank className="w-5 h-5" weight="regular" />
+            </div>
+          ) : isPassword ? (
             <button
               type="button"
               onClick={() => setShowPassword(prev => !prev)}

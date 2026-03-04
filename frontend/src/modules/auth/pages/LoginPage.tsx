@@ -4,16 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Eye, EyeSlash, CircleNotch } from '@phosphor-icons/react';
 import { authService } from '../services/authService';
 import { useToast } from '@shared/hooks/useToast';
-
-interface ViaCepResponse {
-  cep: string;
-  logradouro: string;
-  complemento: string;
-  bairro: string;
-  localidade: string;
-  uf: string;
-  erro?: boolean;
-}
+import { useCepSearch } from '@shared/hooks/useCepSearch';
 
 type View = 'login' | 'register';
 type RegStep = 'user' | 'company';
@@ -71,7 +62,7 @@ export function LoginPage() {
   const [companyNeighborhood, setCompanyNeighborhood] = useState('');
   const [companyCity, setCompanyCity] = useState('');
   const [companyState, setCompanyState] = useState('');
-  const [isLoadingCep, setIsLoadingCep] = useState(false);
+  const { fetchAddress, isLoading: isLoadingCep } = useCepSearch();
 
   // Format functions
   const formatCNPJ = (value: string) => {
@@ -101,29 +92,18 @@ export function LoginPage() {
   };
 
   const fetchAddressByCep = useCallback(async (cep: string) => {
-    const cleanCep = cep.replace(/\D/g, '');
-    if (cleanCep.length !== 8) return;
+    const result = await fetchAddress(cep);
 
-    setIsLoadingCep(true);
-    try {
-      const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
-      const data: ViaCepResponse = await response.json();
-
-      if (data.erro) {
-        addToast('CEP não encontrado', 'warning');
-        return;
-      }
-
-      setCompanyAddress(data.logradouro || '');
-      setCompanyNeighborhood(data.bairro || '');
-      setCompanyCity(data.localidade || '');
-      setCompanyState(data.uf || '');
-    } catch {
-      addToast('Erro ao buscar CEP', 'danger');
-    } finally {
-      setIsLoadingCep(false);
+    if (!result) {
+      addToast('CEP não encontrado', 'warning');
+      return;
     }
-  }, [addToast]);
+
+    setCompanyAddress(result.street || '');
+    setCompanyNeighborhood(result.neighborhood || '');
+    setCompanyCity(result.city || '');
+    setCompanyState(result.state || '');
+  }, [fetchAddress, addToast]);
 
   const handleZipCodeChange = (value: string) => {
     const formatted = formatZipCode(value);
