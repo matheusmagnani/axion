@@ -48,6 +48,7 @@ model Company {
   contracts  Contract[]
   billings   Billing[]
   products   Product[]
+  plans      Plan[]
 
   @@map("companies")
 }
@@ -98,25 +99,32 @@ model Contract {
 }
 
 model Billing {
-  id          Int            @id @default(autoincrement())
-  description String
-  value       Decimal        @db.Decimal(10, 2)
-  dueDate     DateTime       @map("due_date")
-  paymentDate DateTime?      @map("payment_date")
-  status      BillingStatus  @default(PENDING)
+  id            Int            @id @default(autoincrement())
+  description   String
+  value         Decimal        @db.Decimal(10, 2)
+  subtotal      Decimal?       @db.Decimal(10, 2)
+  dueDate       DateTime       @map("due_date")
+  paymentDate   DateTime?      @map("payment_date")
+  status        BillingStatus  @default(PENDING)
+  type          String?
+  origin        String?
+  planId        Int?           @map("plan_id")
+  productIds    Int[]          @map("product_ids")
+  discountType  String?        @map("discount_type")
+  discountValue Decimal?       @db.Decimal(10, 2) @map("discount_value")
 
-  associateId Int            @map("associate_id")
-  associate   Associate      @relation(fields: [associateId], references: [id])
+  associateId   Int            @map("associate_id")
+  associate     Associate      @relation(fields: [associateId], references: [id])
 
-  contractId  Int?           @map("contract_id")
-  contract    Contract?      @relation(fields: [contractId], references: [id])
+  contractId    Int?           @map("contract_id")
+  contract      Contract?      @relation(fields: [contractId], references: [id])
 
-  companyId   Int            @map("company_id")
-  company     Company        @relation(fields: [companyId], references: [id])
+  companyId     Int            @map("company_id")
+  company       Company        @relation(fields: [companyId], references: [id])
 
-  createdAt   DateTime       @default(now()) @map("created_at")
-  updatedAt   DateTime       @updatedAt @map("updated_at")
-  deletedAt   DateTime?      @map("deleted_at")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  deletedAt     DateTime?      @map("deleted_at")
 
   @@map("billings")
 }
@@ -190,4 +198,23 @@ model Product {
 
   @@unique([name, companyId])
   @@map("products")
+}
+
+model Plan {
+  id            Int       @id @default(autoincrement())
+  name          String
+  description   String?
+  productIds    Int[]     @map("product_ids")
+  discountType  String?   @map("discount_type")
+  discountValue Decimal?  @db.Decimal(10, 2) @map("discount_value")
+  status        Int       @default(1)
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
+
+  companyId     Int       @map("company_id")
+  company       Company   @relation(fields: [companyId], references: [id])
+
+  @@unique([name, companyId])
+  @@map("plans")
 }

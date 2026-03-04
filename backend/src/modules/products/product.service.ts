@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { ProductRepository } from './product.repository.js'
+import { PlanRepository } from '../plans/plan.repository.js'
 import { ConflictError, NotFoundError } from '../../shared/errors/app-error.js'
 import type { CreateProductInput, UpdateProductInput, ListProductsQuery } from './product.schema.js'
 
@@ -8,9 +9,11 @@ const UPLOADS_DIR = path.join(process.cwd(), 'uploads')
 
 export class ProductService {
   private repository: ProductRepository
+  private planRepository: PlanRepository
 
   constructor() {
     this.repository = new ProductRepository()
+    this.planRepository = new PlanRepository()
   }
 
   async list(query: ListProductsQuery, companyId: number) {
@@ -57,7 +60,13 @@ export class ProductService {
       }
     }
 
-    return this.repository.update(id, data)
+    const updated = await this.repository.update(id, data)
+
+    if (data.status === 0) {
+      await this.planRepository.removeProductFromAll(id, companyId)
+    }
+
+    return updated
   }
 
   async uploadImage(id: number, companyId: number, fileBuffer: Buffer, ext: string) {
@@ -104,6 +113,7 @@ export class ProductService {
       if (fs.existsSync(filePath)) fs.unlinkSync(filePath)
     }
 
+    await this.planRepository.removeProductFromAll(id, companyId)
     await this.repository.delete(id, companyId)
   }
 }

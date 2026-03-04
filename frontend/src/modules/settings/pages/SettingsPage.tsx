@@ -4,6 +4,7 @@ import { CompanyInfoSection } from '../components/CompanyInfoSection';
 import { RolesSection } from '../components/RolesSection';
 import { PermissionsSection } from '../components/PermissionsSection';
 import { ProductsSection } from '../components/ProductsSection';
+import { PlansSection } from '../components/PlansSection';
 
 export function SettingsPage() {
   return (
@@ -18,7 +19,7 @@ export function SettingsPage() {
 
       {/* Content */}
       <div className="flex-1 min-h-0 mt-2 overflow-auto">
-        <div className="flex flex-col gap-6 py-4 px-4 md:px-8 lg:px-12">
+        <div className="flex flex-col gap-3 py-4 px-4 md:px-8 lg:px-12">
           {/* Módulo: Informações da Empresa */}
           <CompanyInfoSection />
 
@@ -30,6 +31,9 @@ export function SettingsPage() {
 
           {/* Módulo: Produtos */}
           <ProductsSection />
+
+          {/* Módulo: Planos */}
+          <PlansSection />
         </div>
       </div>
     </div>
