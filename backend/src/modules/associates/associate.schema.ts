@@ -47,7 +47,23 @@ export const idParamSchema = z.object({
   id: z.coerce.number().int().positive(),
 });
 
+// Schema for bulk import
+const importAssociateItemSchema = z.object({
+  name: z.string().min(1, 'Nome é obrigatório'),
+  cpf: z.string().min(1, 'CPF é obrigatório'),
+  email: z.string().email('Email inválido'),
+  phone: z.string().min(1, 'Telefone é obrigatório'),
+});
+
+export const importAssociatesSchema = z.object({
+  associates: z
+    .array(importAssociateItemSchema)
+    .min(1, 'A planilha deve conter pelo menos 1 associado')
+    .max(5000, 'Máximo de 5000 associados por importação'),
+});
+
 // Types
 export type CreateAssociateInput = z.infer<typeof createAssociateSchema>;
 export type UpdateAssociateInput = z.infer<typeof updateAssociateSchema>;
 export type ListAssociatesQuery = z.infer<typeof listAssociatesQuerySchema>;
+export type ImportAssociatesInput = z.infer<typeof importAssociatesSchema>;

@@ -16,7 +16,10 @@ import { permissionRoutes } from './modules/permissions/permission.routes.js';
 import { productRoutes } from './modules/products/product.routes.js';
 import { planRoutes } from './modules/plans/plan.routes.js';
 import { billingRoutes } from './modules/billings/billing.routes.js';
+import { jobRoutes } from './infra/queue/job.routes.js';
 import { prisma } from './infra/database/prisma/client.js';
+import { queueManager } from './infra/queue/queue-manager.js';
+import { processAssociateImport } from './infra/queue/workers/associate-import.worker.js';
 
 const app = Fastify({
   logger: {
@@ -78,6 +81,10 @@ const start = async () => {
     app.register(productRoutes, { prefix: '/api/products' });
     app.register(planRoutes, { prefix: '/api/plans' });
     app.register(billingRoutes, { prefix: '/api/billings' });
+    app.register(jobRoutes, { prefix: '/api/jobs' });
+
+    // Register queue workers
+    queueManager.registerQueue('associate-import', processAssociateImport);
 
     // Test database connection
     await prisma.$connect();
@@ -94,6 +101,7 @@ const start = async () => {
 // Graceful shutdown
 const gracefulShutdown = async () => {
   console.log('\nShutting down gracefully...');
+  await queueManager.shutdown();
   await prisma.$disconnect();
   await app.close();
   process.exit(0);

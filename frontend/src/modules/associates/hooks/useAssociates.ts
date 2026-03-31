@@ -49,3 +49,10 @@ export function useDeleteAssociate() {
     },
   });
 }
+
+export function useImportAssociates() {
+  return useMutation({
+    mutationFn: (associates: Array<{ name: string; cpf: string; email: string; phone: string }>) =>
+      associatesService.importBulk(associates),
+  });
+}

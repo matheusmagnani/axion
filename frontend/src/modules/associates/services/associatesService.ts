@@ -105,4 +105,14 @@ export const associatesService = {
   async delete(id: number): Promise<void> {
     await api.delete(`/api/associates/${id}`);
   },
+
+  async importBulk(
+    associates: Array<{ name: string; cpf: string; email: string; phone: string }>,
+  ): Promise<{ jobId: string; importJobId: number }> {
+    const response = await api.post<{ jobId: string; importJobId: number }>(
+      '/api/associates/import',
+      { associates },
+    );
+    return response.data;
+  },
 };

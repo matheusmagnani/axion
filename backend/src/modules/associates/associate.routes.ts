@@ -13,6 +13,9 @@ export async function associateRoutes(app: FastifyInstance) {
   // POST /api/associates - Create new
   app.post('/', controller.create.bind(controller));
 
+  // POST /api/associates/import - Bulk import
+  app.post('/import', controller.importBulk.bind(controller));
+
   // PUT /api/associates/:id - Update
   app.put('/:id', controller.update.bind(controller));
 
