@@ -181,6 +181,9 @@ export function PageHeader({
         {/* Actions */}
         {hasActions && (
           <div className="page-header__actions">
+            {/* Extra content (before search) */}
+            {children}
+
             {/* Search */}
             {onSearch && (
               <div className="flex items-center gap-3 md:gap-4">
@@ -252,9 +255,6 @@ export function PageHeader({
                 )}
               </div>
             )}
-
-            {/* Extra content */}
-            {children}
 
             {/* Add Button */}
             {onAdd && (

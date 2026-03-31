@@ -5,6 +5,7 @@ import {
   updateAssociateSchema,
   listAssociatesQuerySchema,
   idParamSchema,
+  importAssociatesSchema,
 } from './associate.schema.js';
 
 const service = new AssociateService();
@@ -44,5 +45,12 @@ export class AssociateController {
     const { companyId } = request.user;
     await service.delete(id, companyId);
     return reply.status(204).send();
+  }
+
+  async importBulk(request: FastifyRequest, reply: FastifyReply) {
+    const data = importAssociatesSchema.parse(request.body);
+    const { companyId, userId } = request.user;
+    const result = await service.enqueueImport(data, companyId, userId);
+    return reply.status(202).send(result);
   }
 }

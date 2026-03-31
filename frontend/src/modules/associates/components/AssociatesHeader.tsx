@@ -1,5 +1,7 @@
 import { UsersThree } from '@phosphor-icons/react';
 import { PageHeader, type FilterConfig } from '@shared/components/PageHeader';
+import { JobProgressBar } from '@shared/components/JobProgressBar';
+import { useJobProgressStore } from '@/shared/stores/useJobProgressStore';
 
 interface AssociatesHeaderProps {
   onSearch?: (value: string) => void;
@@ -20,8 +22,13 @@ const filters: FilterConfig[] = [
 ];
 
 export function AssociatesHeader({ onSearch, onFilterChange, onAdd }: AssociatesHeaderProps) {
+  const jobs = useJobProgressStore((s) => s.jobs);
+  const hasActiveJob = Object.values(jobs).some(
+    (j) => j.queueName === 'associate-import' && !j.dismissedAt,
+  );
+
   return (
-    <PageHeader 
+    <PageHeader
       title="Associados"
       icon={UsersThree}
       onSearch={onSearch}
@@ -29,6 +36,8 @@ export function AssociatesHeader({ onSearch, onFilterChange, onAdd }: Associates
       onFilterChange={onFilterChange}
       onAdd={onAdd}
       addLabel="Novo Associado"
-    />
+    >
+      {hasActiveJob && <JobProgressBar queueName="associate-import" />}
+    </PageHeader>
   );
 }

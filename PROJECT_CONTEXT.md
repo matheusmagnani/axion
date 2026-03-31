@@ -2,9 +2,10 @@
 
 ## Stack
 
-- **Backend:** Fastify + Prisma + PostgreSQL + TypeScript
-- **Frontend:** React + Vite + TailwindCSS + TypeScript
+- **Backend:** Fastify + Prisma + PostgreSQL + TypeScript + BullMQ (filas)
+- **Frontend:** React + Vite + TailwindCSS + TypeScript + xlsx (SheetJS)
 - **Dev runner:** tsx (watch mode)
+- **Queue:** Redis + BullMQ (processamento assíncrono de jobs)
 
 ## Backend
 
@@ -19,7 +20,7 @@
 ### Módulos
 
 - **auth** — login, register, refresh, upload/remove avatar, update profile (name, email, roleId)
-- **associates** — CRUD de associados
+- **associates** — CRUD de associados + importação em massa via planilha (BullMQ)
 - **collaborators** — CRUD completo de colaboradores (listagem, criação, edição, soft delete, toggle active, change password, com roleId/role)
 - **settings** — configurações da empresa (GET/PUT company info)
 - **roles** — CRUD de setores por empresa
@@ -30,7 +31,7 @@
 
 ### Models (Prisma)
 
-- Company, User, Associate, Contract, Billing, Role, Permission, Product, Plan
+- Company, User, Associate, Contract, Billing, Role, Permission, Product, Plan, ImportJob
 - Billing possui campos: type (subscription|single), origin (plan|product), planId, productIds[], discountType, discountValue, subtotal, value (final)
 - User possui campo `avatar` (String?) — caminho relativo do arquivo
 - User possui campo `roleId` (Int?) — setor do usuário (relação com Role)
@@ -49,6 +50,7 @@
 - **Plan status** — `Int`: 0 = inativo, 1 = ativo (default 1)
 - `ContractStatus` — ACTIVE, ENDED, CANCELLED, PENDING (enum)
 - `BillingStatus` — PENDING, PAID, OVERDUE, CANCELLED (enum)
+- `ImportJobStatus` — PENDING, PROCESSING, COMPLETED, FAILED (enum)
 
 ### Padrão de Soft Delete
 
@@ -63,6 +65,36 @@
 - Fluxo: 1) Verificar se ativo existe (conflito) → 2) Verificar se deletado existe (restaurar) → 3) Criar novo
 - Restaurar = setar `deletedAt = null`, atualizar campos com os novos dados, reativar (status/active)
 - Isso evita conflitos de constraint `@@unique` no banco de dados
+
+### Infraestrutura de Filas (BullMQ)
+
+```
+infra/queue/
+├── connection.ts              # Conexão Redis para BullMQ
+├── queue-manager.ts           # Singleton: registerQueue, addJob, shutdown
+├── types.ts                   # JobProgress, JobResult, JobError, JobStatusResponse
+├── job.routes.ts              # GET /api/jobs/:queueName/:jobId
+├── job.controller.ts          # Consulta ImportJob no banco
+└── workers/
+    └── associate-import.worker.ts  # Processamento de importação de associados
+```
+
+- `QueueManager` — classe singleton para registrar filas e workers
+- Workers atualizam a tabela `ImportJob` durante e após processamento
+- Endpoint genérico de consulta lê da tabela `ImportJob` (persistente)
+
+### Model ImportJob
+
+- `ImportJob` — registro de importações: jobId, queueName, status, totalRows, successCount, errorCount, errors (JSON)
+- Pertence a Company (companyId) e registra userId de quem iniciou
+- Status: PENDING → PROCESSING → COMPLETED/FAILED
+- Tabela genérica — serve para qualquer tipo de importação futura
+
+### Endpoints de Jobs
+
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| GET | /api/jobs/:queueName/:jobId | Sim | Consultar status de um job |
 
 ### Endpoints de Auth
 
@@ -262,11 +294,12 @@ modules/associates/
 │   ├── AssociatesPage.tsx         # Listagem de associados
 │   └── AssociateDetailPage.tsx    # Página de detalhe do associado
 ├── components/
-│   ├── AssociatesHeader.tsx       # Header com busca, filtros e botão criar
+│   ├── AssociatesHeader.tsx       # Header com busca, filtros, botão criar e barra de progresso
 │   ├── AssociatesTable.tsx        # Tabela/listagem de associados (clique no nome navega para detalhe)
-│   └── AssociateForm.tsx          # Formulário de criação/edição
+│   ├── AssociateForm.tsx          # Formulário de criação/edição
+│   └── ImportSpreadsheetModal.tsx # Modal de importação de associados via planilha
 ├── hooks/
-│   └── useAssociates.ts           # Hooks React Query (useAssociates, useAssociate, useCreate/Update/Delete)
+│   └── useAssociates.ts           # Hooks React Query (useAssociates, useAssociate, useCreate/Update/Delete/Import)
 └── services/
     └── associatesService.ts       # API service (interfaces: Associate, AssociateDetail, Contract, Billing)
 ```
@@ -326,8 +359,18 @@ O sistema de permissões é aplicado no frontend via hook compartilhado:
 - **Colaboradores** — botão criar, editar, toggle, alterar senha e excluir condicionados por `create`/`edit`/`delete`
 - **Cobranças** — botão criar condicionado por `create`, editar e cancelar condicionados por `edit`/`delete`
 
+### Componentes Compartilhados Extras
+
+- **SpreadsheetReader** (`shared/components/SpreadsheetReader/`) — componente genérico de leitura de planilhas. Drag & drop, parse com SheetJS (xlsx), mapeamento de colunas (case-insensitive + aliases), preview em tabela, download de planilha modelo
+- **JobProgressBar** (`shared/components/JobProgressBar/`) — barra de progresso reutilizável para jobs assíncronos. Polling via React Query, atualiza store Zustand, auto-dismiss após conclusão
+
+### Stores Compartilhadas (shared/stores/)
+
+- `useJobProgressStore` — Store Zustand com persistência em localStorage. Rastreia jobs assíncronos (importações). Sobrevive a F5 e navegação entre páginas
+
 ### Hooks Compartilhados (shared/hooks/)
 
 - `useMyPermissions()` / `useCanAccess(module, action)` — sistema de permissões (ver seção acima)
 - `useToast()` — exibir toasts de feedback (success, danger, warning)
 - `useCepSearch()` — busca de endereço por CEP com 4 sistemas de fallback (BrasilAPI → OpenCEP → AwesomeAPI → ViaCEP). Retorna `{ fetchAddress, isLoading }`. Usado em CompanyInfoSection e LoginPage
+- `useJobStatus(queueName, jobId, enabled)` — polling de status de job via React Query (1s). Para automaticamente quando completed/failed
