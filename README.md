@@ -258,6 +258,6 @@ Para fazer login com a conta de teste:
 
 <p align="center">                                                                                                                                                                                                                                                                                                         
       <sub>Desenvolvido por Matheus Magnani</sub><br/>                                                                                                                                    
-      <img src="logo_beets_transparent.png" alt="bee.ts" height="20" />                                                                                                      
+      <img src="frontend/public/beets/logo_beets_transparent.png" alt="bee.ts" height="20" />                                                                                                      
 </p>
 
